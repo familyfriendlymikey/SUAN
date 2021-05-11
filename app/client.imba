@@ -1,6 +1,6 @@
 let p = console.log
 tag x-app
-	prop text = "DONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\n"
+	prop text = window.localStorage._ffm_schedule_text || "13 1h Press edit to add a new task."
 	prop editing = no
 
 	def parse_time time
@@ -40,6 +40,7 @@ tag x-app
 
 	def handle_editing_toggle
 		editing = !editing
+		window.localStorage._ffm_schedule_text = text
 
 	def handle_task_click id
 		lines = get_lines_from_text!
