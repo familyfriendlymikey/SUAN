@@ -91,6 +91,7 @@ tag x-app
 				text-decoration:{done ? "line-through" : "none"}
 				transition:transform 250ms
 				d:flex fld:row jc:flex-start ai:center
+				cursor:pointer user-select:none user-select:none
 			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
 			css .left rdl:{rd}
 			css .right rdr:{rd}
@@ -117,13 +118,14 @@ tag x-app
 				bg:cyan1 ff:arial bdt:3px solid sky2
 				h:70px pos:fixed b:0 l:0 r:0
 				d:flex fld:row jc:center ai:center
-				fs:20px c:blue5 zi:1000
+				fs:20px c:blue5 zi:1000 cursor:pointer
+				user-select:none
 			]
 		@click=handle_editing_toggle>
 				editing ? "VIEW" : "EDIT"
 
 	def render_schedule_editor
-		<textarea[w:100% h:100% fs:25px b:1px solid sky4 p:20px] bind=text>
+		<textarea[d:flex fl:1 fs:25px b:1px solid sky4 p:20px] bind=text>
 
 	def render
 		<self [d:flex fld:column h:100%]>
