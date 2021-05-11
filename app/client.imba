@@ -123,7 +123,7 @@ tag x-app
 				editing ? "VIEW" : "EDIT"
 
 	def render_schedule_editor
-		<textarea[w:100% h:100%] bind=text>
+		<textarea[w:100% h:100% fs:25px b:1px solid sky4 p:20px] bind=text>
 
 	def render
 		<self [d:flex fld:column h:100%]>
