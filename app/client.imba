@@ -1,6 +1,6 @@
 let p = console.log
 tag x-app
-	prop text = "DONE 859 1h brush teeth \n820 30m  walk\n959\n2359"
+	prop text = "DONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\nDONE 859 1h brush teeth \n820 30m  walk\n959\n2359\n"
 	prop editing = no
 
 	def parse_time time
@@ -72,7 +72,7 @@ tag x-app
 	def get_lines_from_text
 		text.trim().split('\n')
 
-	def	parse_and_sort_lines_by_time lines
+	def parse_and_sort_lines_by_time lines
 		data = []
 		for line, id in lines
 			data.push parse_task_text line, id
@@ -81,13 +81,15 @@ tag x-app
 
 	def render_task {id, type, time, duration, desc, done}
 		rd = 5px
-		<div[d:flex h:70px w:100% fld:row jc:space-between pt:10px] @click=handle_task_click(id)>
+		<div[d:flex h:70px w:100% fld:row jc:space-between pb:10px]
+		@mousedown=handle_task_click(id)>
 			css .middle
 				px:7px py:2px w:100%
 				bg:{done ? "cyan1" : "blue1"}
 				transform:{done ? "scale(0.97)" : "none"}
 				text-decoration:{done ? "line-through" : "none"}
-				transition: transform 250ms;
+				transition:transform 250ms
+				d:flex fld:row jc:flex-start ai:center
 			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
 			css .left rdl:{rd}
 			css .right rdr:{rd}
@@ -110,7 +112,14 @@ tag x-app
 			# <div> render_difference data[id - 1], data[id]
 
 	def render_toggle_editing_button
-		<div[bg:cyan1 ff:arial c:blue5 w:5 rd:7px w:100% h:70px d:flex fld:column jc:center ta:center] @click=handle_editing_toggle> editing ? "VIEW" : "EDIT"
+		<div[
+				bg:cyan1 ff:arial bdt:3px solid sky2
+				h:70px pos:fixed b:0 l:0 r:0
+				d:flex fld:row jc:center ai:center
+				fs:20px c:blue5 zi:1000
+			]
+		@click=handle_editing_toggle>
+				editing ? "VIEW" : "EDIT"
 
 	def render_schedule_editor
 		<textarea[w:100% h:100%] bind=text>
