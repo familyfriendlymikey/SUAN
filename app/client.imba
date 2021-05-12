@@ -1,7 +1,50 @@
 let p = console.log
-tag x-app
-	prop text = window.localStorage._ffm_schedule_text || "13 1h Press edit to add a new task."
-	prop editing = no
+let o = "hello world"
+
+tag Schedule
+	def render
+		<self[w:100%]> for item in tasks
+			<Task data=item>
+
+tag AddTaskPage
+	def render
+		<self> <input[w:100% h:50px fs:25px p:10px]>
+
+tag Task
+	def render
+		let { desc, time, duration } = data
+		rd = 5px
+		<self[d:flex h:70px w:100% fld:row jc:space-between pb:10px]
+		@mousedown=handle_task_click(id)>
+			css .middle
+				px:7px py:2px w:100%
+				bg:{done ? "cyan1" : "blue1"}
+				transform:{done ? "scale(0.97)" : "none"}
+				text-decoration:{done ? "line-through" : "none"}
+				transition:transform 250ms
+				d:flex fld:row jc:flex-start ai:center
+				cursor:pointer user-select:none user-select:none
+			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
+			css .left rdl:{rd}
+			css .right rdr:{rd}
+			<div.side.left> "test"
+			<div.middle> desc
+			<div.side.right> "test"
+
+tag AddTaskButton
+	def render
+		<self[
+				bg:cyan1 ff:arial bdt:3px solid sky2
+				h:70px pos:fixed b:0 l:0 r:0
+				d:flex fld:row jc:center ai:center
+				fs:20px c:blue5 zi:1000 cursor:pointer
+				user-select:none
+			]
+		@click=handle_add> "ADD"
+
+tag App
+	prop tasks = [{desc:"do it!"}]
+	prop adding = true
 
 	def parse_time time
 		if time.length <= 2 and parseInt(time) < 24
@@ -17,20 +60,17 @@ tag x-app
 		words = item.trim().split(/\s/)
 		done = false
 
-		def is_duration duration
-			(/^\d+[hms]$/).test(duration)
-
-		def is_time time
-			(/^\d+$/).test(time)
+		const is_duration? = do |duration| (/^\d+[hms]$/).test(duration)
+		const is_time? = do |time| (/^\d+$/).test(time)
 
 		if words[0] == 'DONE'
 			words = words.slice(1)
 			done = true
 
-		if is_time words[0]
+		if is_time? words[0]
 			time = parse_time words[0]
 
-		if is_duration words[1]
+		if is_duration? words[1]
 			duration = words[1]
 			desc = words.slice(2).join(" ")
 			return {type: "FULL_TASK", time, duration, desc, done, id}
@@ -38,9 +78,8 @@ tag x-app
 			desc = words.slice(1).join(" ")
 			return {type: "NO_DURATION", time, desc, done, id}
 
-	def handle_editing_toggle
-		editing = !editing
-		window.localStorage._ffm_schedule_text = text
+	def handle_add
+		adding = !adding
 
 	def handle_task_click id
 		lines = get_lines_from_text!
@@ -80,59 +119,15 @@ tag x-app
 		data.sort compare_time
 		data
 
-	def render_task {id, type, time, duration, desc, done}
-		rd = 5px
-		<div[d:flex h:70px w:100% fld:row jc:space-between pb:10px]
-		@mousedown=handle_task_click(id)>
-			css .middle
-				px:7px py:2px w:100%
-				bg:{done ? "cyan1" : "blue1"}
-				transform:{done ? "scale(0.97)" : "none"}
-				text-decoration:{done ? "line-through" : "none"}
-				transition:transform 250ms
-				d:flex fld:row jc:flex-start ai:center
-				cursor:pointer user-select:none user-select:none
-			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
-			css .left rdl:{rd}
-			css .right rdr:{rd}
-			if type == "FULL_TASK"
-					<div.side.left> time
-					<div.middle> desc
-					<div.side.right> duration
-			elif type == "NO_DURATION"
-					<div.side.left> time
-					<div.middle.right> desc
-
 	def render_difference one, two
 		<div[ta:center]> "-- {two.time} - {one ? one.time : ""} --"
 
-	def render_schedule
-		lines = get_lines_from_text!
-		data = parse_and_sort_lines_by_time lines
-		<div[w:100%]> for item, id in data
-			<div> render_task item
-			# <div> render_difference data[id - 1], data[id]
-
-	def render_toggle_editing_button
-		<div[
-				bg:cyan1 ff:arial bdt:3px solid sky2
-				h:70px pos:fixed b:0 l:0 r:0
-				d:flex fld:row jc:center ai:center
-				fs:20px c:blue5 zi:1000 cursor:pointer
-				user-select:none
-			]
-		@click=handle_editing_toggle>
-				editing ? "VIEW" : "EDIT"
-
-	def render_schedule_editor
-		<textarea[d:flex fl:1 fs:25px b:1px solid sky4 p:20px] bind=text>
-
 	def render
-		<self [d:flex fld:column h:100%]>
-			render_toggle_editing_button!
-			if editing
-				render_schedule_editor!
+		<self [d:flex fld:column mb:70px]>
+			<AddTaskButton handle_add=handle_add.bind(self)>
+			if adding
+				<AddTaskPage>
 			else
-				render_schedule!
+				<Schedule tasks>
 
-imba.mount <x-app>
+imba.mount <App>
