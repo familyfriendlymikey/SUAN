@@ -117,19 +117,23 @@ tag AddTaskPage
 tag Task
 
 	prop timeout
-	prop timer
+	prop animating
 
 	def handle_task_mousedown
 		def mark_done
 			p o
-			tasks[tasks.indexOf data].done = !data.done
-		timeout = setTimeout(mark_done, 5000)
-		timer = new Date()
+			tasks[tasks.indexOf data].done = true
+			imba.commit!
+		animating = true
+		timeout = setTimeout(mark_done, 600)
 		# save_data!
 
 	def handle_task_mouseup
+		animating = no
 		clearTimeout(timeout)
-		timer = null
+
+	def handle_end
+		p o
 
 	def render
 		let { desc, time, duration, done } = data
@@ -140,10 +144,10 @@ tag Task
 		>
 			css .middle
 				px:7px py:2px w:100%
-				bg:{done ? "cyan1" : "blue1"}
-				transform:{done ? "scale(0.97)" : "none"}
-				text-decoration:{done ? "line-through" : "none"}
-				transition:transform 250ms
+				bg:{animating ? "cyan1" : "blue1"}
+				transform:{animating ? "scaleX(0)" : "none"}
+				text-decoration:{animating ? "line-through" : "none"}
+				transition:transform 600ms, background-color 600ms
 				d:flex fld:row jc:flex-start ai:center
 				cursor:pointer user-select:none user-select:none
 			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
@@ -151,7 +155,7 @@ tag Task
 			css .right rdr:{rd}
 			if time
 				<div.side.left> time
-			<div.middle> timer - new Date()
+			<div.middle> desc
 			if duration
 				<div.side.right> duration
 
