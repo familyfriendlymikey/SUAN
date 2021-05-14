@@ -1,7 +1,7 @@
 {
   "name": "schedule",
   "scripts": {
-    "start": "imba -w server.imba"
+    "start": "imba -wS server.imba"
   },
   "dependencies": {
     "express": "^4.17.1",
