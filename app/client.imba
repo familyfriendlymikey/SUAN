@@ -121,41 +121,48 @@ tag Task
 
 	def handle_task_mousedown
 		def mark_done
-			p o
 			tasks[tasks.indexOf data].done = true
 			imba.commit!
+			save_data!
 		animating = true
 		timeout = setTimeout(mark_done, 600)
-		# save_data!
 
 	def handle_task_mouseup
 		animating = no
 		clearTimeout(timeout)
 
-	def handle_end
-		p o
-
 	def render
 		let { desc, time, duration, done } = data
 		rd = 5px
-		<self[d:flex h:70px w:100% fld:row jc:space-between pb:10px]
+		<self[
+			d:flex h:70px w:100% fld:row jc:space-between pb:10px
+		]
 			@mousedown=handle_task_mousedown
 			@mouseup=handle_task_mouseup
 		>
+			css div
+				bg:{animating ? "cyan1" : "blue1"}
+				transition:background-color 600ms
 			css .middle
 				px:7px py:2px w:100%
-				bg:{animating ? "cyan1" : "blue1"}
-				transform:{animating ? "scaleX(0)" : "none"}
-				text-decoration:{animating ? "line-through" : "none"}
-				transition:transform 600ms, background-color 600ms
 				d:flex fld:row jc:flex-start ai:center
 				cursor:pointer user-select:none user-select:none
-			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
+			css .side
+				d:flex
+				fld:column
+				jc:center
+				min-width:50px
+				ta:center
+				bg:{animating ? "cyan1" : "blue2"}
 			css .left rdl:{rd}
 			css .right rdr:{rd}
-			if time
-				<div.side.left> time
-			<div.middle> desc
+			<div.side.left> time
+			if time and duration
+				<div.middle> desc
+			elif duration
+				<div.middle[rdl:{rd}]> desc
+			else
+				<div.middle[rdr:{rd}]> desc
 			if duration
 				<div.side.right> duration
 
