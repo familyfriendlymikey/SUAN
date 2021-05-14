@@ -17,6 +17,9 @@ css .bottom-button
 	fs:20px c:blue5 zi:1000 cursor:pointer
 	user-select:none
 
+def save_data
+	window.localStorage._ffm_tasks = JSON.stringify tasks
+
 def parse_task_text item
 	let words = item.trim().split(/\s/)
 
@@ -102,7 +105,7 @@ tag AddTaskPage
 		let task = parse_task_text add_task_text
 		if !tasks_are_same? task, tasks[0]
 			insert_task task
-			window.localStorage._ffm_tasks = JSON.stringify tasks
+			save_data!
 		add_task_text = ""
 		adding = !adding
 
@@ -112,14 +115,26 @@ tag AddTaskPage
 			<div.bottom-button@click=handle_add> "DONE"
 
 tag Task
-	def handle_task_click
-		tasks[tasks.indexOf data].done = !data.done
+
+	prop timeout
+
+	def handle_task_mousedown
+		def mark_done
+			p o
+			tasks[tasks.indexOf data].done = !data.done
+		timeout = setTimeout(mark_done, 1000)
+		# save_data!
+
+	def handle_task_mouseup
+		clearTimeout(timeout)
 
 	def render
 		let { desc, time, duration, done } = data
 		rd = 5px
 		<self[d:flex h:70px w:100% fld:row jc:space-between pb:10px]
-		@mousedown=handle_task_click>
+			@mousedown=handle_task_mousedown
+			@mouseup=handle_task_mouseup
+		>
 			css .middle
 				px:7px py:2px w:100%
 				bg:{done ? "cyan1" : "blue1"}
