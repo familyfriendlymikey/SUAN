@@ -1,7 +1,11 @@
 let p = console.log
 let o = "hello world"
 
-let tasks = [{desc:"do it!", time:"13:00", duration:"1h"}]
+let tasks
+try
+	tasks = JSON.parse(window.localStorage._ffm_tasks)
+catch
+	tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h"}]
 let adding = false
 let add_task_text = ""
 
@@ -85,15 +89,18 @@ tag AddTaskPage
 
 	def handle_add
 		if !add_task_text
+			adding = !adding
 			return
 		let task = parse_task_text add_task_text
 		insert_task task
+		p tasks
+		window.localStorage._ffm_tasks = JSON.stringify tasks
 		add_task_text = ""
 		adding = !adding
 
 	def render
 		<self>
-			<input[w:100% h:50px fs:25px p:10px] bind=add_task_text>
+			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [1h, 30m, 10s] [description]" bind=add_task_text>
 			<div.bottom-button@click=handle_add> "DONE"
 
 tag Task
