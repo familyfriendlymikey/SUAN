@@ -57,11 +57,37 @@ tag Schedule
 			<div.bottom-button@click=adding=!adding> "ADD"
 
 tag AddTaskPage
+	def cmp_time item1, item2
+		let time1 = item1.time.split(":")
+		let time2 = item2.time.split(":")
+		let hours1 = parseInt time1[0]
+		let mins1 = parseInt time1[1]
+		let hours2 = parseInt time2[0]
+		let mins2 = parseInt time2[1]
+		if hours1 > hours2
+			return true
+		elif hours1 < hours2
+			return false
+		else
+			if mins1 > mins2
+				return true
+			elif mins1 < mins2
+				return false
+			else
+				return false
+
+	def insert_task task_to_insert
+		for task, index in tasks
+			if cmp_time(task, task_to_insert)
+				tasks.splice(index, 0, task_to_insert)
+				return
+		tasks.splice(tasks.length, 0, task_to_insert)
+
 	def handle_add
 		if !add_task_text
 			return
-		let task_data = parse_task_text add_task_text
-		tasks.push(task_data)
+		let task = parse_task_text add_task_text
+		insert_task task
 		add_task_text = ""
 		adding = !adding
 
@@ -103,25 +129,6 @@ tag App
 		else
 			lines[id] = done_msg + lines[id]
 		text = lines.join("\n")
-
-	def compare_time item1, item2
-		let time1 = item1.time.split(":")
-		let time2 = item2.time.split(":")
-		let hours1 = parseInt time1[0]
-		let mins1 = parseInt time1[1]
-		let hours2 = parseInt time2[0]
-		let mins2 = parseInt time2[1]
-		if hours1 > hours2
-			return true
-		elif hours1 < hours2
-			return false
-		else
-			if mins1 > mins2
-				return true
-			elif mins1 < mins2
-				return false
-			else
-				return false
 
 	def render_difference one, two
 		<div[ta:center]> "-- {two.time} - {one ? one.time : ""} --"
