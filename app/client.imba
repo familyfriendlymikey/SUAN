@@ -1,14 +1,74 @@
 let p = console.log
 let o = "hello world"
 
+let tasks = [{desc:"do it!", time:"13:00", duration:"1h"}]
+let adding = false
+let add_task_text = ""
+
+css .bottom-button
+	bg:cyan1 ff:arial bdt:3px solid sky2
+	h:70px pos:fixed b:0 l:0 r:0
+	d:flex fld:row jc:center ai:center
+	fs:20px c:blue5 zi:1000 cursor:pointer
+	user-select:none
+
+def parse_task_text item
+	let words = item.trim().split(/\s/)
+
+	const is_duration? = do |duration| (/^\d+[hms]$/).test(duration)
+
+	def parse_time time
+		unless /^\d+$/.test(time)
+			return false
+		if time.length <= 2 and parseInt(time) < 24
+			return time + ":00"
+		elif time.length == 3 and parseInt(time.substr(1)) < 60
+			return time[0] + ":" + time.substr(1)
+		elif time.length == 4 and parseInt(time.substr(0,2)) < 24 and parseInt(time.substr(2)) < 60
+			return time.substr(0,2) + ":" + time.substr(2)
+		else
+			return false
+
+	let time
+	let duration
+	let desc
+	if (time = parse_time words[0]) and (is_duration? words[1])
+		duration = words[1]
+		desc = words.slice(2).join(" ")
+		return {time, duration, desc}
+	elif time = parse_time(words[0])
+		desc = words.slice(1).join(" ")
+		return {time, desc}
+	elif is_duration? words[0]
+		duration = words[0]
+		desc = words.slice(1).join(" ")
+		time = "0:00"
+		return {time, duration, desc}
+	else
+		time = "0:00"
+		desc = words.join(" ")
+		return {time, desc}
+
 tag Schedule
 	def render
-		<self[w:100%]> for item in tasks
-			<Task data=item>
+		<self[w:100%]>
+			<div> for item in tasks
+				<Task data=item>
+			<div.bottom-button@click=adding=!adding> "ADD"
 
 tag AddTaskPage
+	def handle_add
+		if !add_task_text
+			return
+		let task_data = parse_task_text add_task_text
+		tasks.push(task_data)
+		add_task_text = ""
+		adding = !adding
+
 	def render
-		<self> <input[w:100% h:50px fs:25px p:10px]>
+		<self>
+			<input[w:100% h:50px fs:25px p:10px] bind=add_task_text>
+			<div.bottom-button@click=handle_add> "DONE"
 
 tag Task
 	def render
@@ -27,59 +87,13 @@ tag Task
 			css .side d:flex fld:column jc:center min-width:50px ta:center bg:{done ? "cyan2" : "blue2"}
 			css .left rdl:{rd}
 			css .right rdr:{rd}
-			<div.side.left> "test"
+			if time
+				<div.side.left> time
 			<div.middle> desc
-			<div.side.right> "test"
-
-tag AddTaskButton
-	def render
-		<self[
-				bg:cyan1 ff:arial bdt:3px solid sky2
-				h:70px pos:fixed b:0 l:0 r:0
-				d:flex fld:row jc:center ai:center
-				fs:20px c:blue5 zi:1000 cursor:pointer
-				user-select:none
-			]
-		@click=handle_add> "ADD"
+			if duration
+				<div.side.right> duration || ""
 
 tag App
-	prop tasks = [{desc:"do it!"}]
-	prop adding = true
-
-	def parse_time time
-		if time.length <= 2 and parseInt(time) < 24
-			return time + ":00"
-		elif time.length == 3 and parseInt(time.substr(1)) < 60
-			return time[0] + ":" + time.substr(1)
-		elif time.length == 4 and parseInt(time.substr(0,2)) < 24 and parseInt(time.substr(2)) < 60
-			return time.substr(0,2) + ":" + time.substr(2)
-		else
-			return "INVALID"
-
-	def parse_task_text item, id
-		words = item.trim().split(/\s/)
-		done = false
-
-		const is_duration? = do |duration| (/^\d+[hms]$/).test(duration)
-		const is_time? = do |time| (/^\d+$/).test(time)
-
-		if words[0] == 'DONE'
-			words = words.slice(1)
-			done = true
-
-		if is_time? words[0]
-			time = parse_time words[0]
-
-		if is_duration? words[1]
-			duration = words[1]
-			desc = words.slice(2).join(" ")
-			return {type: "FULL_TASK", time, duration, desc, done, id}
-		else
-			desc = words.slice(1).join(" ")
-			return {type: "NO_DURATION", time, desc, done, id}
-
-	def handle_add
-		adding = !adding
 
 	def handle_task_click id
 		lines = get_lines_from_text!
@@ -109,25 +123,14 @@ tag App
 			else
 				return false
 
-	def get_lines_from_text
-		text.trim().split('\n')
-
-	def parse_and_sort_lines_by_time lines
-		data = []
-		for line, id in lines
-			data.push parse_task_text line, id
-		data.sort compare_time
-		data
-
 	def render_difference one, two
 		<div[ta:center]> "-- {two.time} - {one ? one.time : ""} --"
 
 	def render
 		<self [d:flex fld:column mb:70px]>
-			<AddTaskButton handle_add=handle_add.bind(self)>
 			if adding
 				<AddTaskPage>
 			else
-				<Schedule tasks>
+				<Schedule>
 
 imba.mount <App>
