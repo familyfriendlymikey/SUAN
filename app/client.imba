@@ -58,7 +58,7 @@ def parse_task_text item
 tag Schedule
 	def render
 		<self[w:100%]>
-			<div> for item in tasks
+			<div> for item in tasks.filter(|t| !t.done)
 				<Task data=item>
 			<div.bottom-button@click=adding=!adding> "ADD"
 
