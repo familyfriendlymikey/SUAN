@@ -137,8 +137,8 @@ tag Task
 		<self[
 			d:flex h:70px w:100% fld:row jc:space-between pb:10px
 		]
-			@mousedown=handle_task_mousedown
-			@mouseup=handle_task_mouseup
+			@pointerdown=handle_task_mousedown
+			@pointerup=handle_task_mouseup
 		>
 			css div
 				bg:{animating ? "cyan1" : "blue1"}
