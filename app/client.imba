@@ -117,16 +117,19 @@ tag AddTaskPage
 tag Task
 
 	prop timeout
+	prop timer
 
 	def handle_task_mousedown
 		def mark_done
 			p o
 			tasks[tasks.indexOf data].done = !data.done
-		timeout = setTimeout(mark_done, 1000)
+		timeout = setTimeout(mark_done, 5000)
+		timer = new Date()
 		# save_data!
 
 	def handle_task_mouseup
 		clearTimeout(timeout)
+		timer = null
 
 	def render
 		let { desc, time, duration, done } = data
@@ -148,7 +151,7 @@ tag Task
 			css .right rdr:{rd}
 			if time
 				<div.side.left> time
-			<div.middle> desc
+			<div.middle> timer - new Date()
 			if duration
 				<div.side.right> duration
 
