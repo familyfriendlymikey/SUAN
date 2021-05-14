@@ -5,6 +5,7 @@ let tasks
 try
 	tasks = JSON.parse(window.localStorage._ffm_tasks)
 catch
+	window.localStorage._ffm_backup = window.localStorage._ffm_tasks
 	tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h"}]
 let adding = false
 let add_task_text = ""
@@ -36,22 +37,23 @@ def parse_task_text item
 	let time
 	let duration
 	let desc
+	let done = false
 	if (time = parse_time words[0]) and (is_duration? words[1])
 		duration = words[1]
 		desc = words.slice(2).join(" ")
-		return {time, duration, desc}
+		return {time, duration, desc, done}
 	elif time = parse_time(words[0])
 		desc = words.slice(1).join(" ")
-		return {time, desc}
+		return {time, desc, done}
 	elif is_duration? words[0]
 		duration = words[0]
 		desc = words.slice(1).join(" ")
 		time = "0:00"
-		return {time, duration, desc}
+		return {time, duration, desc, done}
 	else
 		time = "0:00"
 		desc = words.join(" ")
-		return {time, desc}
+		return {time, desc, done}
 
 tag Schedule
 	def render
@@ -87,14 +89,20 @@ tag AddTaskPage
 				return
 		tasks.splice(tasks.length, 0, task_to_insert)
 
+	def tasks_are_same? task1, task2
+		for own key of task1
+			if task1[key] != task2[key]
+				return false
+		return true
+
 	def handle_add
 		if !add_task_text
 			adding = !adding
 			return
 		let task = parse_task_text add_task_text
-		insert_task task
-		p tasks
-		window.localStorage._ffm_tasks = JSON.stringify tasks
+		if !tasks_are_same? task, tasks[0]
+			insert_task task
+			window.localStorage._ffm_tasks = JSON.stringify tasks
 		add_task_text = ""
 		adding = !adding
 
@@ -104,11 +112,14 @@ tag AddTaskPage
 			<div.bottom-button@click=handle_add> "DONE"
 
 tag Task
+	def handle_task_click
+		tasks[tasks.indexOf data].done = !data.done
+
 	def render
-		let { desc, time, duration } = data
+		let { desc, time, duration, done } = data
 		rd = 5px
 		<self[d:flex h:70px w:100% fld:row jc:space-between pb:10px]
-		@mousedown=handle_task_click(id)>
+		@mousedown=handle_task_click>
 			css .middle
 				px:7px py:2px w:100%
 				bg:{done ? "cyan1" : "blue1"}
@@ -124,22 +135,9 @@ tag Task
 				<div.side.left> time
 			<div.middle> desc
 			if duration
-				<div.side.right> duration || ""
+				<div.side.right> duration
 
 tag App
-
-	def handle_task_click id
-		lines = get_lines_from_text!
-		done_msg = "DONE "
-		if lines[id].startsWith(done_msg)
-			lines[id] = lines[id].slice(done_msg.length)
-		else
-			lines[id] = done_msg + lines[id]
-		text = lines.join("\n")
-
-	def render_difference one, two
-		<div[ta:center]> "-- {two.time} - {one ? one.time : ""} --"
-
 	def render
 		<self [d:flex fld:column mb:70px]>
 			if adding
