@@ -3,15 +3,23 @@ let o = "hello world"
 
 import { nanoid as generate_id } from 'nanoid'
 
-let tasks
-try
-	tasks = JSON.parse(window.localStorage._ffm_tasks)
-catch
-	window.localStorage._ffm_backup = window.localStorage._ffm_tasks
-	tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
-let adding = no
-let viewing_complete = no
-let add_task_text = ""
+let state = {}
+
+def getInitialState
+	state.tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
+	state.adding = no
+	state.viewing_complete = no
+	state.add_task_text = ""
+	state.view = "SCHEDULE"
+
+def loadState
+	try
+		state.tasks = JSON.parse(window.localStorage._ffm_tasks)
+	catch
+		window.localStorage._ffm_backup = window.localStorage._ffm_tasks
+
+getInitialState!
+loadState!
 
 css .bottom-button
 	bg:cyan1 ff:arial bdt:3px solid sky2
@@ -21,7 +29,7 @@ css .bottom-button
 	user-select:none
 
 def save_data
-	window.localStorage._ffm_tasks = JSON.stringify tasks
+	window.localStorage._ffm_tasks = JSON.stringify state.tasks
 
 def parse_task_text item
 	let words = item.trim().split(/\s/)
@@ -61,29 +69,41 @@ def parse_task_text item
 		desc = words.join(" ")
 		return {time, desc, done}
 
+tag Options
+
+	def reset
+		getInitialState!
+
+	def render
+		<self[d:flex fld:column jc:center ai:center]>
+			css div fl:1 w:90% bg:blue1 d:flex fld:row jc:center ai:center p:20px mb:10px
+			<div@click=state.view="SCHEDULE"> "HOME"
+			<div@click=reset> "RESET APP"
+
+
 tag Schedule
 
 	def get_tasks_list
-		if viewing_complete
-			tasks.filter(|t| t.done)
+		if state.viewing_complete
+			state.tasks.filter(|t| t.done)
 		else
-			tasks.filter(|t| !t.done)
-
-	def reset
-		tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
-		window.localStorage._ffm_tasks = tasks
+			state.tasks.filter(|t| !t.done)
+	
+	def view_options
+		state.view = "OPTIONS"
 
 	def render
-		<self[w:100%]>
-			<div> for item in get_tasks_list!
-				<Task data=item $key=item.id>
+		<self[w:100% d:flex fld:column jc:center ai:center]>
+			if (let tasks = get_tasks_list!).length > 0
+				<div [w:100%]> for item in tasks
+					<Task data=item $key=item.id>
+			else
+				<h1> "Add A Task Below"
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
-				<div@click=viewing_complete=!viewing_complete> viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
-				if viewing_complete
-					<div@click=reset> "RESET"
-				else
-					<div@click=adding=!adding> "ADD"
+				<div@click=view_options> "OPTIONS"
+				<div@click=state.viewing_complete=!state.viewing_complete> state.viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
+				<div@click=state.adding=!state.adding> "ADD"
 
 tag AddTaskPage
 	def cmp_time item1, item2
@@ -106,11 +126,11 @@ tag AddTaskPage
 				return false
 
 	def insert_task task_to_insert
-		for task, index in tasks
+		for task, index in state.tasks
 			if cmp_time(task, task_to_insert)
-				tasks.splice(index, 0, task_to_insert)
+				state.tasks.splice(index, 0, task_to_insert)
 				return
-		tasks.splice(tasks.length, 0, task_to_insert)
+		state.tasks.splice(state.tasks.length, 0, task_to_insert)
 
 	def tasks_are_same? task1, task2
 		for own key of task1
@@ -119,20 +139,20 @@ tag AddTaskPage
 		return true
 
 	def handle_add
-		if !add_task_text
-			adding = !adding
+		if !state.add_task_text
+			state.adding = !state.adding
 			return
-		let task = parse_task_text add_task_text
-		if !tasks_are_same? task, tasks[0]
+		let task = parse_task_text state.add_task_text
+		if !tasks_are_same? task, state.tasks[0]
 			task.id = generate_id!
 			insert_task task
 			save_data!
-		add_task_text = ""
-		adding = !adding
+		state.add_task_text = ""
+		state.adding = !state.adding
 
 	def render
 		<self>
-			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [1h, 30m, 10s] [description]" bind=add_task_text>
+			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [1h, 30m, 10s] [description]" bind=state.add_task_text>
 			<div.bottom-button@click=handle_add> "DONE"
 
 tag Task
@@ -142,7 +162,7 @@ tag Task
 
 	def handle_task_pointerdown
 		def mark_done
-			tasks[tasks.indexOf data].done = !tasks[tasks.indexOf data].done
+			state.tasks[state.tasks.indexOf data].done = !state.tasks[state.tasks.indexOf data].done
 			animating = no
 			imba.commit!
 			save_data!
@@ -160,7 +180,7 @@ tag Task
 		let { desc, time, duration, done } = data
 		rd = 5px
 		<self[
-			d:flex h:70px w:100% fld:row jc:space-between pb:10px
+			d:flex h:70px flex:1 fld:row jc:space-between pb:10px
 		]
 			@pointerdown=handle_task_pointerdown
 			@pointerup=handle_task_pointerup
@@ -195,9 +215,12 @@ tag Task
 tag App
 	def render
 		<self [d:flex fld:column mb:70px]>
-			if adding
+			if state.adding
 				<AddTaskPage>
 			else
-				<Schedule>
+				if state.view == "OPTIONS"
+					<Options>
+				else
+					<Schedule>
 
 imba.mount <App>
