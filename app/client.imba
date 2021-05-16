@@ -7,7 +7,8 @@ try
 catch
 	window.localStorage._ffm_backup = window.localStorage._ffm_tasks
 	tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h"}]
-let adding = false
+let adding = no
+let viewing_complete = no
 let add_task_text = ""
 
 css .bottom-button
@@ -59,11 +60,21 @@ def parse_task_text item
 		return {time, desc, done}
 
 tag Schedule
+
+	def get_tasks_list
+		if viewing_complete
+			tasks.filter(|t| t.done)
+		else
+			tasks.filter(|t| !t.done)
+
 	def render
 		<self[w:100%]>
-			<div> for item in tasks.filter(|t| !t.done)
+			<div> for item in get_tasks_list!
 				<Task data=item>
-			<div.bottom-button@click=adding=!adding> "ADD"
+			<div.bottom-button>
+				css div d:flex fl:1 fld:row jc:center ai:center h:100%
+				<div@click=viewing_complete=!viewing_complete> viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
+				<div@click=adding=!adding> "ADD"
 
 tag AddTaskPage
 	def cmp_time item1, item2
