@@ -21,8 +21,11 @@ def loadState
 getInitialState!
 loadState!
 
+global css @root
+	ff: 'Open Sans', sans-serif;
+
 css .bottom-button
-	bg:cyan1 ff:arial bdt:3px solid sky2
+	bg:cyan1 bdt:3px solid sky2
 	h:70px pos:fixed b:0 l:0 r:0
 	d:flex fld:row jc:center ai:center
 	fs:20px c:blue5 zi:1000 cursor:pointer
