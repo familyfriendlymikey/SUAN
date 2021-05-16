@@ -22,7 +22,11 @@ getInitialState!
 loadState!
 
 global css @root
-	ff: 'Open Sans', sans-serif;
+	ff: 'Open Sans', sans-serif
+	-webkit-touch-callout:none
+	-webkit-user-select:none
+	-moz-user-select:none
+	user-select:none
 
 css .bottom-button
 	bg:cyan1 bdt:3px solid sky2
