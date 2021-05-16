@@ -1,12 +1,14 @@
 let p = console.log
 let o = "hello world"
 
+import { nanoid as generate_id } from 'nanoid'
+
 let tasks
 try
 	tasks = JSON.parse(window.localStorage._ffm_tasks)
 catch
 	window.localStorage._ffm_backup = window.localStorage._ffm_tasks
-	tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h"}]
+	tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
 let adding = no
 let viewing_complete = no
 let add_task_text = ""
@@ -67,14 +69,21 @@ tag Schedule
 		else
 			tasks.filter(|t| !t.done)
 
+	def reset
+		tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
+		window.localStorage._ffm_tasks = tasks
+
 	def render
 		<self[w:100%]>
-			<div> for item, index in get_tasks_list!
-				<Task data=item $key=item.desc>
+			<div> for item in get_tasks_list!
+				<Task data=item $key=item.id>
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
 				<div@click=viewing_complete=!viewing_complete> viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
-				<div@click=adding=!adding> "ADD"
+				if viewing_complete
+					<div@click=reset> "RESET"
+				else
+					<div@click=adding=!adding> "ADD"
 
 tag AddTaskPage
 	def cmp_time item1, item2
@@ -115,6 +124,7 @@ tag AddTaskPage
 			return
 		let task = parse_task_text add_task_text
 		if !tasks_are_same? task, tasks[0]
+			task.id = generate_id!
 			insert_task task
 			save_data!
 		add_task_text = ""
@@ -128,10 +138,9 @@ tag AddTaskPage
 tag Task
 
 	prop timeout
-	prop animating
+	prop animating = no
 
 	def handle_task_pointerdown
-		p "pointerdown"
 		def mark_done
 			tasks[tasks.indexOf data].done = !tasks[tasks.indexOf data].done
 			animating = no
@@ -141,7 +150,6 @@ tag Task
 		timeout = setTimeout(mark_done, 600)
 
 	def handle_task_pointerup
-		p "pointerup"
 		animating = no
 		clearTimeout(timeout)
 
