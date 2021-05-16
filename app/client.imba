@@ -69,8 +69,8 @@ tag Schedule
 
 	def render
 		<self[w:100%]>
-			<div> for item in get_tasks_list!
-				<Task data=item>
+			<div> for item, index in get_tasks_list!
+				<Task data=item $key=item.desc>
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
 				<div@click=viewing_complete=!viewing_complete> viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
@@ -130,17 +130,23 @@ tag Task
 	prop timeout
 	prop animating
 
-	def handle_task_mousedown
+	def handle_task_pointerdown
+		p "pointerdown"
 		def mark_done
 			tasks[tasks.indexOf data].done = !tasks[tasks.indexOf data].done
+			animating = no
 			imba.commit!
 			save_data!
 		animating = true
 		timeout = setTimeout(mark_done, 600)
 
-	def handle_task_mouseup
+	def handle_task_pointerup
+		p "pointerup"
 		animating = no
 		clearTimeout(timeout)
+
+	def handle_task_click
+		p "EDIT_TASK"
 
 	def render
 		let { desc, time, duration, done } = data
@@ -148,8 +154,9 @@ tag Task
 		<self[
 			d:flex h:70px w:100% fld:row jc:space-between pb:10px
 		]
-			@pointerdown=handle_task_mousedown
-			@pointerup=handle_task_mouseup
+			@pointerdown=handle_task_pointerdown
+			@pointerup=handle_task_pointerup
+			@click=handle_task_click
 		>
 			css div
 				bg:{animating ? "cyan1" : "blue1"}
