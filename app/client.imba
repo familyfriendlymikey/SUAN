@@ -132,7 +132,7 @@ tag Task
 
 	def handle_task_mousedown
 		def mark_done
-			tasks[tasks.indexOf data].done = true
+			tasks[tasks.indexOf data].done = !tasks[tasks.indexOf data].done
 			imba.commit!
 			save_data!
 		animating = true
