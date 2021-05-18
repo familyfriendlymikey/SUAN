@@ -166,6 +166,9 @@ tag Task
 
 	prop timeout
 	prop animating = no
+	prop active = no
+	prop start_time
+	prop duration = 0
 
 	def handle_task_pointerdown
 		def mark_done
@@ -181,9 +184,26 @@ tag Task
 		clearTimeout(timeout)
 
 	def handle_task_click
-		p "EDIT_TASK"
+		if active and start_time
+			duration += new Date() - start_time
+			p duration
+			active = false
+			start_time = null
+		elif !active and !start_time
+			start_time = new Date()
+			active = true
+	
+	def get_bg
+		if animating
+			bg = "cyan1"
+		else
+			if active
+				bg = "blue5"
+			else
+				bg = "blue1"
 
 	def render
+		let get_bg!
 		let { desc, time, duration, done } = data
 		rd = 5px
 		<self[
@@ -194,7 +214,7 @@ tag Task
 			@click=handle_task_click
 		>
 			css div
-				bg:{animating ? "cyan1" : "blue1"}
+				bg:{bg}
 				transition:background-color 600ms
 			css .middle
 				px:7px py:2px w:100%
