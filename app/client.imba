@@ -98,6 +98,12 @@ tag Schedule
 	def view_options
 		state.view = "OPTIONS"
 
+	def get_total_active_time
+		let total = 0
+		for item of state.tasks
+			total += item.active_duration
+		parseInt(total/1000)
+
 	def render
 		<self[w:100% d:flex fld:column jc:center ai:center]>
 			if (let tasks = get_tasks_list!).length > 0
@@ -105,6 +111,7 @@ tag Schedule
 					<Task data=item $key=item.id>
 			else
 				<h1> "Add A Task Below"
+			<div[pos:fixed bottom:70px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> "ACTIVE TIME: " + get_total_active_time!
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
 				<div@click=view_options> "OPTIONS"
