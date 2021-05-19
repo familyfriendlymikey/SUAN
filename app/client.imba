@@ -33,6 +33,8 @@ css .bottom-button
 	h:70px pos:fixed b:0 l:0 r:0
 	d:flex fld:row jc:center ai:center
 	fs:20px c:blue5 zi:1000 cursor:pointer
+	pb:30px ta:center
+	px:10px
 	user-select:none
 
 def save_data
@@ -111,7 +113,7 @@ tag Schedule
 					<Task data=item $key=item.id>
 			else
 				<h1> "Add A Task Below"
-			<div[pos:fixed bottom:70px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> "ACTIVE TIME: " + get_total_active_time!
+			<div[pos:fixed bottom:100px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> "ACTIVE TIME: " + get_total_active_time!
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
 				<div@click=view_options> "OPTIONS"
