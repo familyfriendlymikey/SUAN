@@ -18,6 +18,12 @@ def loadState
 	catch
 		window.localStorage._ffm_backup = window.localStorage._ffm_tasks
 
+def format_time_from_seconds s
+	if s / 3600 >= 1
+		return new Date(s * 1000).toISOString().substr(11, 8)
+	else
+		return new Date(s * 1000).toISOString().substr(14, 5)
+
 getInitialState!
 loadState!
 
@@ -113,7 +119,7 @@ tag Schedule
 					<Task data=item $key=item.id>
 			else
 				<h1> "Add A Task Below"
-			<div[pos:fixed bottom:100px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> "ACTIVE TIME: " + get_total_active_time!
+			<div[pos:fixed bottom:100px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> format_time_from_seconds(get_total_active_time!)
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
 				<div@click=view_options> "OPTIONS"
@@ -211,6 +217,8 @@ tag Task
 	def get_middle_bg
 		if animating
 			"cyan1"
+		elif data.done
+			"cyan3"
 		else
 			if active
 				"blue5"
@@ -220,11 +228,19 @@ tag Task
 	def get_side_bg
 		if animating
 			"cyan1"
+		elif data.done
+			"cyan3"
 		else
 			if active
 				"blue4"
 			else
 				"blue2"
+
+	def get_task_active_duration
+		if start_time
+			return parseInt(data.active_duration/1000 + (Date.now! - start_time)/1000)
+		else
+			return parseInt(data.active_duration/1000)
 
 	def render
 		let bg = get_middle_bg!
@@ -245,7 +261,6 @@ tag Task
 				px:7px py:2px w:100%
 				d:flex fld:row jc:flex-start ai:center
 				cursor:pointer user-select:none user-select:none
-				text-decoration:{done ? "line-through" : "none"}
 			css .side
 				d:flex
 				fld:column
@@ -260,10 +275,7 @@ tag Task
 			if duration
 				<div.side.right> duration
 			else
-				if start_time
-					<div.side.right> parseInt(data.active_duration/1000 + (Date.now! - start_time)/1000)
-				else
-					<div.side.right> parseInt(data.active_duration/1000)
+				<div.side.right> format_time_from_seconds(get_task_active_duration!)
 
 tag App
 	def render
