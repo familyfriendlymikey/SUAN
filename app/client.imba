@@ -265,17 +265,20 @@ tag Task
 				d:flex
 				fld:column
 				jc:center
-				min-width:50px
 				ta:center
 				bg:{get_side_bg!}
-			css .left rdl:{rd}
-			css .right rdr:{rd}
+			css .left
+				rdl:{rd}
+				min-width:50px
+			css .right
+				rdr:{rd}
+				min-width:85px
 			<div.side.left> time
 			<div.middle> desc
 			if duration
 				<div.side.right> duration
 			else
-				<div.side.right> format_time_from_seconds(get_task_active_duration!)
+				<div.side.right> "+" + format_time_from_seconds(get_task_active_duration!)
 
 tag App
 	def render
