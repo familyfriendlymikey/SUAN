@@ -3,6 +3,7 @@ let o = "hello world"
 
 import { nanoid as generate_id } from 'nanoid'
 
+let api_version = "0.01"
 let state = {}
 
 def getInitialState
@@ -12,11 +13,16 @@ def getInitialState
 	state.add_task_text = ""
 	state.view = "SCHEDULE"
 
+def get_tasks_key
+	return "tasks_" + api_version
+
 def loadState
-	try
-		state.tasks = JSON.parse(window.localStorage._ffm_tasks)
-	catch
-		window.localStorage._ffm_backup = window.localStorage._ffm_tasks
+	if localStorage.hasOwnProperty(let tasks_key = get_tasks_key!)
+		state.tasks = JSON.parse(localStorage[tasks_key])
+
+def save_state
+	let tasks_key = get_tasks_key!
+	localStorage[tasks_key] = JSON.stringify state.tasks
 
 def format_time_from_seconds s
 	if s / 3600 >= 1
@@ -41,9 +47,6 @@ global css body
 	right:0
 	bottom:0
 	top:0
-
-def save_data
-	window.localStorage._ffm_tasks = JSON.stringify state.tasks
 
 def parse_task_text item
 	let words = item.trim().split(/\s/)
@@ -179,7 +182,7 @@ tag AddTaskPage
 		if state.tasks.length < 1 || !tasks_are_same? task, state.tasks[0]
 			task.id = generate_id!
 			insert_task task
-			save_data!
+			save_state!
 		state.add_task_text = ""
 		state.adding = !state.adding
 
@@ -206,7 +209,7 @@ tag Task
 				p data.active_duration
 				active = false
 				start_time = null
-			save_data!
+			save_state!
 
 		animating = true
 		timeout = setTimeout(mark_done, 600)
