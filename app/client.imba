@@ -34,14 +34,9 @@ global css @root
 	-moz-user-select:none
 	user-select:none
 
-css .bottom-button
-	bg:cyan1 bdt:3px solid sky2
-	h:70px pos:fixed b:0 l:0 r:0
-	d:flex fld:row jc:center ai:center
-	fs:20px c:blue5 zi:1000 cursor:pointer
-	pb:30px ta:center
-	px:10px
-	user-select:none
+global css body
+	m:0
+	h:100vh
 
 def save_data
 	window.localStorage._ffm_tasks = JSON.stringify state.tasks
@@ -113,18 +108,30 @@ tag Schedule
 		parseInt(total/1000)
 
 	def render
-		<self[w:100% d:flex fld:column jc:center ai:center]>
+		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
+			css .bottom-button
+				bg:cyan1
+				c:blue5
+				h:70px b:0 l:0 r:0
+				w:100%
+				box-sizing:border-box
+				d:flex fld:row jc:center ai:center
+				fs:20px cursor:pointer
+				pb:30px ta:center
+				px:10px
+				user-select:none
 			if (let tasks = get_tasks_list!).length > 0
-				<div [w:100%]> for item in tasks
+				<div [w:90% overflow-y:scroll]> for item in tasks
 					<Task data=item $key=item.id>
 			else
 				<h1> "Add A Task Below"
-			<div[pos:fixed bottom:100px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> format_time_from_seconds(get_total_active_time!)
-			<div.bottom-button>
-				css div d:flex fl:1 fld:row jc:center ai:center h:100%
-				<div@click=view_options> "OPTIONS"
-				<div@click=state.viewing_complete=!state.viewing_complete> state.viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
-				<div@click=state.adding=!state.adding> "ADD"
+			<div[w:100%]>
+				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:25px ai:center]> format_time_from_seconds(get_total_active_time!)
+				<div.bottom-button>
+					css div d:flex fl:1 fld:row jc:center ai:center h:100%
+					<div@click=view_options> "OPTIONS"
+					<div@click=state.viewing_complete=!state.viewing_complete> state.viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
+					<div@click=state.adding=!state.adding> "ADD"
 
 tag AddTaskPage
 	def cmp_time item1, item2
@@ -282,7 +289,7 @@ tag Task
 
 tag App
 	def render
-		<self [d:flex fld:column mb:70px]>
+		<self [d:flex fld:column h:100%]>
 			if state.adding
 				<AddTaskPage>
 			else
