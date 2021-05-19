@@ -247,12 +247,7 @@ tag Task
 			css .left rdl:{rd}
 			css .right rdr:{rd}
 			<div.side.left> time
-			if time and duration
-				<div.middle> desc
-			elif duration
-				<div.middle[rdl:{rd}]> desc
-			else
-				<div.middle[rdr:{rd}]> desc
+			<div.middle> desc
 			if duration
 				<div.side.right> duration
 			else
