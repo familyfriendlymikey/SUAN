@@ -36,7 +36,11 @@ global css @root
 
 global css body
 	m:0
-	h:100vh
+	pos:fixed
+	left:0
+	right:0
+	bottom:0
+	top:0
 
 def save_data
 	window.localStorage._ffm_tasks = JSON.stringify state.tasks
@@ -88,6 +92,7 @@ tag Options
 			css div fl:1 w:90% bg:blue1 d:flex fld:row jc:center ai:center p:20px mb:10px
 			<div@click=state.view="SCHEDULE"> "HOME"
 			<div@click=reset> "RESET APP"
+			<div@click=window.location.reload(true)> "UPDATE"
 
 
 tag Schedule
@@ -112,7 +117,7 @@ tag Schedule
 			css .bottom-button
 				bg:cyan1
 				c:blue5
-				h:70px b:0 l:0 r:0
+				h:100px b:0 l:0 r:0
 				w:100%
 				box-sizing:border-box
 				d:flex fld:row jc:center ai:center
@@ -121,12 +126,12 @@ tag Schedule
 				px:10px
 				user-select:none
 			if (let tasks = get_tasks_list!).length > 0
-				<div [w:90% overflow-y:scroll]> for item in tasks
+				<div [w:100% box-sizing:border-box px:10px pt:10px overflow-y:scroll]> for item in tasks
 					<Task data=item $key=item.id>
 			else
 				<h1> "Add A Task Below"
 			<div[w:100%]>
-				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:25px ai:center]> format_time_from_seconds(get_total_active_time!)
+				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
 				<div.bottom-button>
 					css div d:flex fl:1 fld:row jc:center ai:center h:100%
 					<div@click=view_options> "OPTIONS"
@@ -191,6 +196,7 @@ tag Task
 	prop start_time
 
 	def handle_task_pointerdown
+		p "pointerdown"
 		def mark_done
 			state.tasks[state.tasks.indexOf data].done = !state.tasks[state.tasks.indexOf data].done
 			animating = no
@@ -205,11 +211,13 @@ tag Task
 		animating = true
 		timeout = setTimeout(mark_done, 600)
 
-	def handle_task_pointerup
+	def handle_task_pointercancel
+		p "pointercancel"
 		animating = no
 		clearTimeout(timeout)
 
 	def handle_task_click
+		p "click"
 		if data.done
 			return
 		if active and start_time
@@ -257,7 +265,8 @@ tag Task
 			d:flex h:70px flex:1 fld:row jc:space-between pb:10px
 		]
 			@pointerdown=handle_task_pointerdown
-			@pointerup=handle_task_pointerup
+			@pointercancel=handle_task_pointercancel
+			@pointerup=handle_task_pointercancel
 			@click=handle_task_click
 			autorender=1fps
 		>
