@@ -70,10 +70,10 @@ def parse_task_text item
 	let time
 	let duration
 
-	if (time = parse_time words[0]) and (is_duration? words[1])
+	if (task.time = parse_time words[0]) and (is_duration? words[1])
 		task.duration = words[1]
 		task.desc = words.slice(2).join(" ")
-	elif time = parse_time(words[0])
+	elif task.time = parse_time(words[0])
 		task.desc = words.slice(1).join(" ")
 	elif is_duration? words[0]
 		task.duration = words[0]
