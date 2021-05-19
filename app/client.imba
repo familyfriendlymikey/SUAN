@@ -6,7 +6,7 @@ import { nanoid as generate_id } from 'nanoid'
 let state = {}
 
 def getInitialState
-	state.tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
+	state.tasks = []
 	state.adding = no
 	state.viewing_complete = no
 	state.add_task_text = ""
@@ -55,26 +55,25 @@ def parse_task_text item
 		else
 			return false
 
+	let task = {done:false, active_duration:0}
+	let desc
 	let time
 	let duration
-	let desc
-	let done = false
+
 	if (time = parse_time words[0]) and (is_duration? words[1])
-		duration = words[1]
-		desc = words.slice(2).join(" ")
-		return {time, duration, desc, done}
+		task.duration = words[1]
+		task.desc = words.slice(2).join(" ")
 	elif time = parse_time(words[0])
-		desc = words.slice(1).join(" ")
-		return {time, desc, done}
+		task.desc = words.slice(1).join(" ")
 	elif is_duration? words[0]
-		duration = words[0]
-		desc = words.slice(1).join(" ")
-		time = "0:00"
-		return {time, duration, desc, done}
+		task.duration = words[0]
+		task.desc = words.slice(1).join(" ")
+		task.time = "0:00"
 	else
-		time = "0:00"
-		desc = words.join(" ")
-		return {time, desc, done}
+		task.time = "0:00"
+		task.desc = words.join(" ")
+	
+	task
 
 tag Options
 
@@ -150,7 +149,7 @@ tag AddTaskPage
 			state.adding = !state.adding
 			return
 		let task = parse_task_text state.add_task_text
-		if !tasks_are_same? task, state.tasks[0]
+		if state.tasks.length < 1 || !tasks_are_same? task, state.tasks[0]
 			task.id = generate_id!
 			insert_task task
 			save_data!
@@ -168,14 +167,19 @@ tag Task
 	prop animating = no
 	prop active = no
 	prop start_time
-	prop active_duration = 0
 
 	def handle_task_pointerdown
 		def mark_done
 			state.tasks[state.tasks.indexOf data].done = !state.tasks[state.tasks.indexOf data].done
 			animating = no
 			imba.commit!
+			if active and start_time
+				data.active_duration += new Date() - start_time
+				p data.active_duration
+				active = false
+				start_time = null
 			save_data!
+
 		animating = true
 		timeout = setTimeout(mark_done, 600)
 
@@ -184,27 +188,38 @@ tag Task
 		clearTimeout(timeout)
 
 	def handle_task_click
+		if data.done
+			return
 		if active and start_time
-			active_duration += new Date() - start_time
-			p active_duration
+			data.active_duration += new Date() - start_time
+			p data.active_duration
 			active = false
 			start_time = null
 		elif !active and !start_time
 			start_time = new Date()
 			active = true
 	
-	def get_bg
+	def get_middle_bg
 		if animating
-			bg = "cyan1"
+			"cyan1"
 		else
 			if active
-				bg = "blue5"
+				"blue5"
 			else
-				bg = "blue1"
+				"blue1"
+
+	def get_side_bg
+		if animating
+			"cyan1"
+		else
+			if active
+				"blue4"
+			else
+				"blue2"
 
 	def render
-		let bg = get_bg!
-		let { desc, time, duration, done } = data
+		let bg = get_middle_bg!
+		let { desc, time, duration, done, active_duration } = data
 		rd = 5px
 		<self[
 			d:flex h:70px flex:1 fld:row jc:space-between pb:10px
@@ -221,13 +236,14 @@ tag Task
 				px:7px py:2px w:100%
 				d:flex fld:row jc:flex-start ai:center
 				cursor:pointer user-select:none user-select:none
+				text-decoration:{done ? "line-through" : "none"}
 			css .side
 				d:flex
 				fld:column
 				jc:center
 				min-width:50px
 				ta:center
-				bg:{animating ? "cyan1" : "blue2"}
+				bg:{get_side_bg!}
 			css .left rdl:{rd}
 			css .right rdr:{rd}
 			<div.side.left> time
@@ -241,9 +257,9 @@ tag Task
 				<div.side.right> duration
 			else
 				if start_time
-					<div.side.right> parseInt(active_duration/1000 + (Date.now! - start_time)/1000)
+					<div.side.right> parseInt(data.active_duration/1000 + (Date.now! - start_time)/1000)
 				else
-					<div.side.right> parseInt(active_duration/1000)
+					<div.side.right> parseInt(data.active_duration/1000)
 
 tag App
 	def render
