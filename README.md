@@ -55,6 +55,3 @@ Something like
 0:00 go to bed
 ```
 should be possible to import automatically.
-
-## TODO
-- Done notes should be sorted in the order you mark them off
