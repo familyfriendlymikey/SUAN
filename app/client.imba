@@ -168,7 +168,7 @@ tag Task
 	prop animating = no
 	prop active = no
 	prop start_time
-	prop duration = 0
+	prop active_duration = 0
 
 	def handle_task_pointerdown
 		def mark_done
@@ -185,8 +185,8 @@ tag Task
 
 	def handle_task_click
 		if active and start_time
-			duration += new Date() - start_time
-			p duration
+			active_duration += new Date() - start_time
+			p active_duration
 			active = false
 			start_time = null
 		elif !active and !start_time
@@ -203,7 +203,7 @@ tag Task
 				bg = "blue1"
 
 	def render
-		let get_bg!
+		let bg = get_bg!
 		let { desc, time, duration, done } = data
 		rd = 5px
 		<self[
@@ -212,6 +212,7 @@ tag Task
 			@pointerdown=handle_task_pointerdown
 			@pointerup=handle_task_pointerup
 			@click=handle_task_click
+			autorender=1fps
 		>
 			css div
 				bg:{bg}
@@ -238,6 +239,11 @@ tag Task
 				<div.middle[rdr:{rd}]> desc
 			if duration
 				<div.side.right> duration
+			else
+				if start_time
+					<div.side.right> parseInt(active_duration/1000 + (Date.now! - start_time)/1000)
+				else
+					<div.side.right> parseInt(active_duration/1000)
 
 tag App
 	def render
