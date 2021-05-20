@@ -6,7 +6,7 @@ import { nanoid as generate_id } from 'nanoid'
 let state = {}
 
 def getInitialState
-	state.tasks = [{desc:"Add a task below.", time:"13:00", duration:"1h", id:generate_id!}]
+	state.tasks = []
 	state.adding = no
 	state.viewing_complete = no
 	state.add_task_text = ""
@@ -17,6 +17,12 @@ def loadState
 		state.tasks = JSON.parse(window.localStorage._ffm_tasks)
 	catch
 		window.localStorage._ffm_backup = window.localStorage._ffm_tasks
+
+def format_time_from_seconds s
+	if s / 3600 >= 1
+		return new Date(s * 1000).toISOString().substr(11, 8)
+	else
+		return new Date(s * 1000).toISOString().substr(14, 5)
 
 getInitialState!
 loadState!
@@ -33,6 +39,8 @@ css .bottom-button
 	h:70px pos:fixed b:0 l:0 r:0
 	d:flex fld:row jc:center ai:center
 	fs:20px c:blue5 zi:1000 cursor:pointer
+	pb:30px ta:center
+	px:10px
 	user-select:none
 
 def save_data
@@ -55,26 +63,25 @@ def parse_task_text item
 		else
 			return false
 
+	let task = {done:false, active_duration:0}
+	let desc
 	let time
 	let duration
-	let desc
-	let done = false
+
 	if (time = parse_time words[0]) and (is_duration? words[1])
-		duration = words[1]
-		desc = words.slice(2).join(" ")
-		return {time, duration, desc, done}
+		task.duration = words[1]
+		task.desc = words.slice(2).join(" ")
 	elif time = parse_time(words[0])
-		desc = words.slice(1).join(" ")
-		return {time, desc, done}
+		task.desc = words.slice(1).join(" ")
 	elif is_duration? words[0]
-		duration = words[0]
-		desc = words.slice(1).join(" ")
-		time = "0:00"
-		return {time, duration, desc, done}
+		task.duration = words[0]
+		task.desc = words.slice(1).join(" ")
+		task.time = "0:00"
 	else
-		time = "0:00"
-		desc = words.join(" ")
-		return {time, desc, done}
+		task.time = "0:00"
+		task.desc = words.join(" ")
+	
+	task
 
 tag Options
 
@@ -99,6 +106,12 @@ tag Schedule
 	def view_options
 		state.view = "OPTIONS"
 
+	def get_total_active_time
+		let total = 0
+		for item of state.tasks
+			total += item.active_duration
+		parseInt(total/1000)
+
 	def render
 		<self[w:100% d:flex fld:column jc:center ai:center]>
 			if (let tasks = get_tasks_list!).length > 0
@@ -106,6 +119,7 @@ tag Schedule
 					<Task data=item $key=item.id>
 			else
 				<h1> "Add A Task Below"
+			<div[pos:fixed bottom:100px h:70px d:flex fld:row jc:flex-end w:90% ai:center]> format_time_from_seconds(get_total_active_time!)
 			<div.bottom-button>
 				css div d:flex fl:1 fld:row jc:center ai:center h:100%
 				<div@click=view_options> "OPTIONS"
@@ -150,7 +164,7 @@ tag AddTaskPage
 			state.adding = !state.adding
 			return
 		let task = parse_task_text state.add_task_text
-		if !tasks_are_same? task, state.tasks[0]
+		if state.tasks.length < 1 || !tasks_are_same? task, state.tasks[0]
 			task.id = generate_id!
 			insert_task task
 			save_data!
@@ -166,13 +180,21 @@ tag Task
 
 	prop timeout
 	prop animating = no
+	prop active = no
+	prop start_time
 
 	def handle_task_pointerdown
 		def mark_done
 			state.tasks[state.tasks.indexOf data].done = !state.tasks[state.tasks.indexOf data].done
 			animating = no
 			imba.commit!
+			if active and start_time
+				data.active_duration += new Date() - start_time
+				p data.active_duration
+				active = false
+				start_time = null
 			save_data!
+
 		animating = true
 		timeout = setTimeout(mark_done, 600)
 
@@ -181,10 +203,48 @@ tag Task
 		clearTimeout(timeout)
 
 	def handle_task_click
-		p "EDIT_TASK"
+		if data.done
+			return
+		if active and start_time
+			data.active_duration += new Date() - start_time
+			p data.active_duration
+			active = false
+			start_time = null
+		elif !active and !start_time
+			start_time = new Date()
+			active = true
+	
+	def get_middle_bg
+		if animating
+			"cyan1"
+		elif data.done
+			"cyan3"
+		else
+			if active
+				"blue5"
+			else
+				"blue1"
+
+	def get_side_bg
+		if animating
+			"cyan1"
+		elif data.done
+			"cyan3"
+		else
+			if active
+				"blue4"
+			else
+				"blue2"
+
+	def get_task_active_duration
+		if start_time
+			return parseInt(data.active_duration/1000 + (Date.now! - start_time)/1000)
+		else
+			return parseInt(data.active_duration/1000)
 
 	def render
-		let { desc, time, duration, done } = data
+		let bg = get_middle_bg!
+		let { desc, time, duration, done, active_duration } = data
 		rd = 5px
 		<self[
 			d:flex h:70px flex:1 fld:row jc:space-between pb:10px
@@ -192,9 +252,10 @@ tag Task
 			@pointerdown=handle_task_pointerdown
 			@pointerup=handle_task_pointerup
 			@click=handle_task_click
+			autorender=1fps
 		>
 			css div
-				bg:{animating ? "cyan1" : "blue1"}
+				bg:{bg}
 				transition:background-color 600ms
 			css .middle
 				px:7px py:2px w:100%
@@ -204,20 +265,20 @@ tag Task
 				d:flex
 				fld:column
 				jc:center
-				min-width:50px
 				ta:center
-				bg:{animating ? "cyan1" : "blue2"}
-			css .left rdl:{rd}
-			css .right rdr:{rd}
+				bg:{get_side_bg!}
+			css .left
+				rdl:{rd}
+				min-width:50px
+			css .right
+				rdr:{rd}
+				min-width:85px
 			<div.side.left> time
-			if time and duration
-				<div.middle> desc
-			elif duration
-				<div.middle[rdl:{rd}]> desc
-			else
-				<div.middle[rdr:{rd}]> desc
+			<div.middle> desc
 			if duration
 				<div.side.right> duration
+			else
+				<div.side.right> "+" + format_time_from_seconds(get_task_active_duration!)
 
 tag App
 	def render
