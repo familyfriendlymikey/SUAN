@@ -218,11 +218,14 @@ tag Task
 		p "pointercancel"
 		animating = no
 		clearTimeout(timeout)
+	
+	def delete_task
+		state.tasks = state.tasks.filter(do |t| t.id != data.id)
 
 	def handle_task_click
 		p "click"
 		if data.done
-			return
+			delete_task!
 		if active and start_time
 			data.active_duration += new Date() - start_time
 			p data.active_duration
