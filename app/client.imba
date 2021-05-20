@@ -3,7 +3,7 @@ let o = "hello world"
 
 import { nanoid as generate_id } from 'nanoid'
 
-let api_version = "0.01"
+let api_version = "0.02"
 let state = {}
 
 def getInitialState
@@ -30,6 +30,18 @@ def format_time_from_seconds s
 	else
 		return new Date(s * 1000).toISOString().substr(14, 5)
 
+def get_completed_tasks
+	state.tasks.filter(|t| t.done)
+
+def get_incomplete_tasks
+	state.tasks.filter(|t| !t.done)
+
+def get_tasks_list
+	if state.viewing_complete
+		get_completed_tasks!
+	else
+		get_incomplete_tasks!
+
 getInitialState!
 loadState!
 
@@ -51,17 +63,40 @@ global css body
 def parse_task_text item
 	let words = item.trim().split(/\s/)
 
-	const is_duration? = do |duration| (/^\d+[hms]$/).test(duration)
+	const str_is_digit = do |s|
+		/^\d+$/.test(s)
 
-	def parse_time time
-		unless /^\d+$/.test(time)
+	const str_is_hours = do |s|
+		s.length <= 2 and parseInt(s) < 24
+
+	const str_is_hours_and_tens = do |s|
+		s.length == 3 and parseInt(s.substr(1)) < 60
+
+	const str_is_hours_and_mins = do |s|
+		s.length == 4 and parseInt(s.substr(0,2)) < 24 and parseInt(s.substr(2)) < 60
+
+	const parse_time = do |s|
+		if !str_is_digit s
 			return false
-		if time.length <= 2 and parseInt(time) < 24
-			return time + ":00"
-		elif time.length == 3 and parseInt(time.substr(1)) < 60
-			return time[0] + ":" + time.substr(1)
-		elif time.length == 4 and parseInt(time.substr(0,2)) < 24 and parseInt(time.substr(2)) < 60
-			return time.substr(0,2) + ":" + time.substr(2)
+		if str_is_hours s
+			return s + ":00"
+		elif str_is_hours_and_tens s
+			return s[0] + ":" + s.substr(1)
+		elif str_is_hours_and_mins s
+			return s.substr(0,2) + ":" + s.substr(2)
+		else
+			return false
+
+	const parse_duration = do |s|
+		if !str_is_digit s
+			return false
+		if str_is_hours s
+			return parseInt(s) * 3600
+		elif str_is_hours_and_tens s
+			p s
+			return (parseInt(s[0]) * 3600) + (parseInt(s.substr(1)) * 60)
+		elif str_is_hours_and_mins s
+			return (parseInt(s.substr(0,2)) * 3600) + (parseInt(s.substr(2) * 60))
 		else
 			return false
 
@@ -69,16 +104,11 @@ def parse_task_text item
 	let desc
 	let time
 	let duration
-
-	if (task.time = parse_time words[0]) and (is_duration? words[1])
-		task.duration = words[1]
+	
+	if (task.time = parse_time words[0]) and (task.duration = parse_duration words[1])
 		task.desc = words.slice(2).join(" ")
-	elif task.time = parse_time(words[0])
+	elif (task.time = parse_time(words[0]))
 		task.desc = words.slice(1).join(" ")
-	elif is_duration? words[0]
-		task.duration = words[0]
-		task.desc = words.slice(1).join(" ")
-		task.time = "0:00"
 	else
 		task.time = "0:00"
 		task.desc = words.join(" ")
@@ -188,7 +218,7 @@ tag AddTaskPage
 
 	def render
 		<self>
-			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [1h, 30m, 10s] [description]" bind=state.add_task_text>
+			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [0-2359] [description]" bind=state.add_task_text>
 			<div.bottom-button@click=handle_add> "DONE"
 
 tag Task
@@ -297,10 +327,13 @@ tag Task
 				min-width:85px
 			<div.side.left> time
 			<div.middle> desc
-			if duration
-				<div.side.right> duration
+			let active_task_duration = get_task_active_duration!
+			if duration && duration > active_task_duration
+				<div.side.right[bg:pink3]> "-" + format_time_from_seconds(duration - active_task_duration)
+			elif duration
+				<div.side.right[bg:green3]> "+" + format_time_from_seconds(Math.abs(duration - active_task_duration))
 			else
-				<div.side.right> "+" + format_time_from_seconds(get_task_active_duration!)
+				<div.side.right> "+" + format_time_from_seconds(active_task_duration)
 
 tag App
 	def render
