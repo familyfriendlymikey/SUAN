@@ -181,9 +181,9 @@ tag Schedule
 				jc:flex-start
 				ai:center
 				w:100%
-				bg:{tasks.length == 0 ? "green1" : "sky0"}
+				bg:{tasks.length == 0 ? "cyan2" : "sky0"}
 				overflow-y:scroll
-				transition:background-color 100ms
+				transition:background-color 700ms
 			]>
 				if tasks.length > 0
 					<div [w:100% box-sizing:border-box px:10px pt:10px]> for item in tasks
