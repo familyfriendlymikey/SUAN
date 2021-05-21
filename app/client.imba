@@ -181,7 +181,7 @@ tag Schedule
 				jc:flex-start
 				ai:center
 				w:100%
-				bg:{tasks.length == 0 ? "cyan2" : "sky0"}
+				bg:{tasks.length == 0 ? "cyan2" : "blue1"}
 				overflow-y:scroll
 				transition:background-color 700ms
 			]>
@@ -295,9 +295,9 @@ tag Task
 			"cyan3"
 		else
 			if active
-				"blue5"
+				"blue3"
 			else
-				"blue1"
+				"blue2"
 
 	def get_side_bg
 		if animating
@@ -305,10 +305,7 @@ tag Task
 		elif data.done
 			"cyan3"
 		else
-			if active
-				"blue4"
-			else
-				"blue2"
+			"blue3"
 
 	def get_task_active_duration
 		if start_time
