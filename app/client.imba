@@ -222,11 +222,15 @@ tag AddTaskPage
 			insert_task task
 		state.add_task_text = ""
 		state.adding = !state.adding
+	
+	def focus_and_select
+		$add_task_input.focus!
+		$add_task_input.select!
 
 	def render
-		<self>
-			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [0-2359] [description]" bind=state.add_task_text>
-			<div.bottom-button@click=handle_add> "DONE"
+		<self@click=focus_and_select [d:flex fl:1 fld:column jc:center ai:center]>
+			<form @submit.prevent=handle_add>
+				<input$add_task_input [w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [0-2359] [description]" bind=state.add_task_text>
 
 
 tag Task
