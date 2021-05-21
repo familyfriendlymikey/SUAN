@@ -182,10 +182,11 @@ tag Schedule
 				ai:center
 				w:100%
 				bg:{tasks.length == 0 ? "green1" : "sky0"}
+				overflow-y:scroll
 				transition:background-color 100ms
 			]>
 				if tasks.length > 0
-					<div [w:100% box-sizing:border-box px:10px pt:10px overflow-y:scroll]> for item in tasks
+					<div [w:100% box-sizing:border-box px:10px pt:10px]> for item in tasks
 						<Task data=item $key=item.id>
 			<div[w:100%]>
 				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
