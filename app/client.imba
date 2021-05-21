@@ -133,6 +133,7 @@ global css body
 	right:0
 	bottom:0
 	top:0
+	bg:blue1
 
 global css .bottom-button
 	bg:cyan1
@@ -154,7 +155,7 @@ tag Options
 
 	def render
 		<self[d:flex fld:column jc:center ai:center]>
-			css div fl:1 w:90% bg:blue1 d:flex fld:row jc:center ai:center p:20px mb:10px
+			css div fl:1 w:90% bg:blue2 d:flex fld:row jc:center ai:center p:20px mb:10px
 			<div@click=state.view="SCHEDULE"> "HOME"
 			<div@click=reset> "RESET APP"
 			<div@click=window.location.reload(true)> "UPDATE"
@@ -181,7 +182,7 @@ tag Schedule
 				jc:flex-start
 				ai:center
 				w:100%
-				bg:{tasks.length == 0 ? "cyan2" : "blue1"}
+				bg:{tasks.length == 0 ? "cyan2" : "none"}
 				overflow-y:scroll
 				transition:background-color 700ms
 			]>
