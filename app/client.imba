@@ -313,7 +313,8 @@ tag Task
 		let { desc, time, duration, done, active_duration } = data
 		let rd = 5px
 		get_pink_bg!
-		<self[ d:flex h:70px flex:1 fld:row jc:space-between pb:10px ]
+		css .task@active transform:scale(0.97) transition:transform 25ms
+		<self.task[ d:flex h:70px flex:1 fld:row jc:space-between pb:10px ]
 			@pointerdown=handle_task_pointerdown
 			@pointercancel=handle_task_pointercancel
 			@pointerleave=handle_task_pointercancel
