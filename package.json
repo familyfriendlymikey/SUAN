@@ -2,7 +2,7 @@
   "name": "schedule",
   "scripts": {
     "start": "imba -wS server.imba",
-    "deploy": "rm -rf dist && imba build --baseurl \".\" server.imba && mv dist/public/__assets__ dist/public/assets && sed -i '' 's/__assets__/assets/g' dist/public/index.html && gh-pages -d dist/public/",
+    "deploy": "rm -rf dist && imba build --baseurl \".\" server.imba && mv dist/public/__assets__ dist/public/assets && sed -i '' 's/__assets__/assets/g' dist/public/index.html && gh-pages -f -d dist/public/",
     "deploy_gnu": "rm -rf dist && imba build --baseurl \".\" server.imba && mv dist/public/__assets__ dist/public/assets && sed -i 's/__assets__/assets/g' dist/public/index.html && gh-pages -d dist/public/"
   },
   "dependencies": {
