@@ -220,7 +220,6 @@ tag AddTaskPage
 		if state.tasks.length < 1 || !tasks_are_same? task, state.tasks[0]
 			task.id = generate_id!
 			insert_task task
-			save_state!
 		state.add_task_text = ""
 		state.adding = !state.adding
 
@@ -248,7 +247,6 @@ tag Task
 				p data.active_duration
 				active = false
 				start_time = null
-			save_state!
 
 		animating = true
 		timeout = setTimeout(mark_done, 600)
@@ -348,6 +346,7 @@ tag Task
 tag App
 
 	def render
+		save_state!
 		<self [d:flex fld:column h:100%]>
 			if state.adding
 				<AddTaskPage>
