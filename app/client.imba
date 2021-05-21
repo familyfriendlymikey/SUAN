@@ -134,6 +134,10 @@ global css body
 	bottom:0
 	top:0
 	bg:blue1
+	d:flex
+	fld:column
+	jc:center
+	ai:center
 
 global css .bottom-button
 	bg:cyan1
@@ -346,7 +350,7 @@ tag App
 
 	def render
 		save_state!
-		<self [d:flex fld:column h:100%]>
+		<self [d:flex fld:column h:100% max-width:500px w:100%]>
 			if state.adding
 				<AddTaskPage>
 			else
