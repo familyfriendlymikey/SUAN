@@ -240,20 +240,28 @@ tag Task
 	prop active = no
 	prop start_time
 
-	def handle_task_pointerdown
-		p "pointerdown"
-		def mark_done
-			state.tasks[state.tasks.indexOf data].done = !state.tasks[state.tasks.indexOf data].done
+	def deactivate_task
+		data.active_duration += new Date() - start_time
+		p data.active_duration
+		active = false
+		start_time = null
+
+	def handle_long_press
+		p "long pressed"
+		if data.done
+			delete_task!
+			imba.commit!
+		else
+			data.done = true
 			animating = no
 			imba.commit!
 			if active and start_time
-				data.active_duration += new Date() - start_time
-				p data.active_duration
-				active = false
-				start_time = null
+				deactivate_task!
 
+	def handle_task_pointerdown
+		p "pointerdown"
 		animating = true
-		timeout = setTimeout(mark_done, 600)
+		timeout = setTimeout(handle_long_press.bind(self), 600)
 
 	def handle_task_pointercancel
 		p "pointercancel"
@@ -266,12 +274,9 @@ tag Task
 	def handle_task_click
 		p "click"
 		if data.done
-			delete_task!
-		if active and start_time
-			data.active_duration += new Date() - start_time
-			p data.active_duration
-			active = false
-			start_time = null
+			data.done = no
+		elif active and start_time
+			deactivate_task!
 		elif !active and !start_time
 			start_time = new Date()
 			active = true
