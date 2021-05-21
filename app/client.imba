@@ -3,7 +3,7 @@ let o = "hello world"
 
 import { nanoid as generate_id } from 'nanoid'
 
-let api_version = "0.02"
+let api_version = "0.06"
 let state = {}
 
 getInitialState!
@@ -104,7 +104,7 @@ def parse_task_text item
 		else
 			return false
 
-	let task = {done:false, active_duration:0}
+	let task = {done:false, active_duration:0, start_time:null}
 	let desc
 	let time
 	let duration
@@ -236,19 +236,14 @@ tag AddTaskPage
 tag Task
 
 	prop timeout
-	prop animating = no
-	prop active = no
-	prop start_time
 
 	def clear_timeout
 		clearTimeout(timeout)
 		timeout = null
 
 	def deactivate_task
-		data.active_duration += new Date() - start_time
-		p data.active_duration
-		active = false
-		start_time = null
+		data.active_duration += Date.now! - data.start_time
+		data.start_time = null
 
 	def handle_long_press
 		clear_timeout!
@@ -257,19 +252,16 @@ tag Task
 			imba.commit!
 		else
 			data.done = true
-			animating = no
 			imba.commit!
-			if active and start_time
+			if data.start_time
 				deactivate_task!
 
 	def handle_task_pointerdown
 		p "pointerdown"
-		animating = true
 		timeout = setTimeout(handle_long_press.bind(self), 600)
 
 	def handle_task_pointercancel
 		p "pointercancel"
-		animating = no
 		clear_timeout!
 	
 	def delete_task
@@ -279,28 +271,26 @@ tag Task
 		p "pointerup"
 		if timeout
 			clear_timeout!
-			animating = no
 			if data.done
 				data.done = no
-			elif active and start_time
+			elif data.start_time
 				deactivate_task!
-			elif !active and !start_time
-				start_time = new Date()
-				active = true
+			else
+				data.start_time = Date.now!
 	
 	def get_middle_bg
-		if animating
+		if timeout
 			"cyan1"
 		elif data.done
 			"cyan3"
 		else
-			if active
+			if data.start_time
 				"blue3"
 			else
 				"blue2"
 
 	def get_side_bg
-		if animating
+		if timeout
 			"cyan1"
 		elif data.done
 			"cyan3"
@@ -313,8 +303,8 @@ tag Task
 			p active_task_duration / data.duration
 
 	def get_task_active_duration
-		if start_time
-			return parseInt(data.active_duration/1000 + (Date.now! - start_time)/1000)
+		if data.start_time
+			return parseInt(data.active_duration/1000 + (Date.now! - data.start_time)/1000)
 		else
 			return parseInt(data.active_duration/1000)
 
