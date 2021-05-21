@@ -182,7 +182,7 @@ tag Schedule
 				ai:center
 				w:100%
 				bg:{tasks.length == 0 ? "green1" : "sky0"}
-				transition:background-color 500ms
+				transition:background-color 100ms
 			]>
 				if tasks.length > 0
 					<div [w:100% box-sizing:border-box px:10px pt:10px overflow-y:scroll]> for item in tasks
