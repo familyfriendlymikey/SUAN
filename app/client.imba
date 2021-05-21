@@ -129,12 +129,6 @@ tag Options
 
 
 tag Schedule
-
-	def get_tasks_list
-		if state.viewing_complete
-			state.tasks.filter(|t| t.done)
-		else
-			state.tasks.filter(|t| !t.done)
 	
 	def view_options
 		state.view = "OPTIONS"
@@ -146,6 +140,7 @@ tag Schedule
 		parseInt(total/1000)
 
 	def render
+		let tasks = get_tasks_list!
 		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
 			css .bottom-button
 				bg:cyan1
@@ -158,11 +153,19 @@ tag Schedule
 				pb:30px ta:center
 				px:10px
 				user-select:none
-			if (let tasks = get_tasks_list!).length > 0
-				<div [w:100% box-sizing:border-box px:10px pt:10px overflow-y:scroll]> for item in tasks
-					<Task data=item $key=item.id>
-			else
-				<h1> "Add A Task Below"
+			<div[
+				fl:1
+				d:flex
+				fld:column
+				jc:flex-start
+				ai:center
+				w:100%
+				bg:{tasks.length == 0 ? "green1" : "sky0"}
+				transition:background-color 500ms
+			]>
+				if tasks.length > 0
+					<div [w:100% box-sizing:border-box px:10px pt:10px overflow-y:scroll]> for item in tasks
+						<Task data=item $key=item.id>
 			<div[w:100%]>
 				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
 				<div.bottom-button>
