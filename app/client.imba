@@ -6,15 +6,15 @@ import { nanoid as generate_id } from 'nanoid'
 let api_version = "0.02"
 let state = {}
 
+getInitialState!
+loadState!
+
 def getInitialState
 	state.tasks = []
 	state.adding = no
 	state.viewing_complete = no
 	state.add_task_text = ""
 	state.view = "SCHEDULE"
-
-def get_tasks_key
-	return "tasks_" + api_version
 
 def loadState
 	if localStorage.hasOwnProperty(let tasks_key = get_tasks_key!)
@@ -23,6 +23,9 @@ def loadState
 def save_state
 	let tasks_key = get_tasks_key!
 	localStorage[tasks_key] = JSON.stringify state.tasks
+
+def get_tasks_key
+	return "tasks_" + api_version
 
 def format_time_from_seconds s
 	if s / 3600 >= 1
@@ -42,23 +45,24 @@ def get_tasks_list
 	else
 		get_incomplete_tasks!
 
-getInitialState!
-loadState!
-
-global css @root
-	ff: 'Open Sans', sans-serif
-	-webkit-touch-callout:none
-	-webkit-user-select:none
-	-moz-user-select:none
-	user-select:none
-
-global css body
-	m:0
-	pos:fixed
-	left:0
-	right:0
-	bottom:0
-	top:0
+def cmp_time item1, item2
+	let time1 = item1.time.split(":")
+	let time2 = item2.time.split(":")
+	let hours1 = parseInt time1[0]
+	let mins1 = parseInt time1[1]
+	let hours2 = parseInt time2[0]
+	let mins2 = parseInt time2[1]
+	if hours1 > hours2
+		return true
+	elif hours1 < hours2
+		return false
+	else
+		if mins1 > mins2
+			return true
+		elif mins1 < mins2
+			return false
+		else
+			return false
 
 def parse_task_text item
 	let words = item.trim().split(/\s/)
@@ -115,6 +119,34 @@ def parse_task_text item
 	
 	task
 
+global css @root
+	ff: 'Open Sans', sans-serif
+	-webkit-touch-callout:none
+	-webkit-user-select:none
+	-moz-user-select:none
+	user-select:none
+
+global css body
+	m:0
+	pos:fixed
+	left:0
+	right:0
+	bottom:0
+	top:0
+
+global css .bottom-button
+	bg:cyan1
+	c:blue5
+	h:100px b:0 l:0 r:0
+	w:100%
+	box-sizing:border-box
+	d:flex fld:row jc:center ai:center
+	fs:20px cursor:pointer
+	pb:30px ta:center
+	px:10px
+	user-select:none
+
+
 tag Options
 
 	def reset
@@ -142,17 +174,6 @@ tag Schedule
 	def render
 		let tasks = get_tasks_list!
 		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
-			css .bottom-button
-				bg:cyan1
-				c:blue5
-				h:100px b:0 l:0 r:0
-				w:100%
-				box-sizing:border-box
-				d:flex fld:row jc:center ai:center
-				fs:20px cursor:pointer
-				pb:30px ta:center
-				px:10px
-				user-select:none
 			<div[
 				fl:1
 				d:flex
@@ -174,25 +195,8 @@ tag Schedule
 					<div@click=state.viewing_complete=!state.viewing_complete> state.viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
 					<div@click=state.adding=!state.adding> "ADD"
 
+
 tag AddTaskPage
-	def cmp_time item1, item2
-		let time1 = item1.time.split(":")
-		let time2 = item2.time.split(":")
-		let hours1 = parseInt time1[0]
-		let mins1 = parseInt time1[1]
-		let hours2 = parseInt time2[0]
-		let mins2 = parseInt time2[1]
-		if hours1 > hours2
-			return true
-		elif hours1 < hours2
-			return false
-		else
-			if mins1 > mins2
-				return true
-			elif mins1 < mins2
-				return false
-			else
-				return false
 
 	def insert_task task_to_insert
 		for task, index in state.tasks
@@ -223,6 +227,7 @@ tag AddTaskPage
 		<self>
 			<input[w:100% h:50px fs:25px p:10px] placeholder="[0-2359] [0-2359] [description]" bind=state.add_task_text>
 			<div.bottom-button@click=handle_add> "DONE"
+
 
 tag Task
 
@@ -338,7 +343,9 @@ tag Task
 			else
 				<div.side.right> "+" + format_time_from_seconds(active_task_duration)
 
+
 tag App
+
 	def render
 		<self [d:flex fld:column h:100%]>
 			if state.adding
