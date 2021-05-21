@@ -192,9 +192,13 @@ tag Schedule
 				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
 				<div.bottom-button>
 					css div d:flex fl:1 fld:row jc:center ai:center h:100%
-					<div@click=view_options> "OPTIONS"
-					<div@click=state.viewing_complete=!state.viewing_complete> state.viewing_complete ? "VIEW INCOMPLETE" : "VIEW COMPLETE"
-					<div@click=state.adding=!state.adding> "ADD"
+					<div@click=view_options> <svg src='./assets/settings.svg'>
+					<div@click=state.viewing_complete=!state.viewing_complete>
+						if state.viewing_complete
+							<svg src='./assets/x.svg'>
+						else
+							<svg src='./assets/check.svg'>
+					<div@click=state.adding=!state.adding> <svg src='./assets/plus.svg'>
 
 
 tag AddTaskPage
