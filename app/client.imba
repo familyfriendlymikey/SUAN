@@ -289,7 +289,7 @@ tag Task
 			"cyan3"
 		else
 			if data.start_time
-				"blue3"
+				"blue4"
 			else
 				"blue2"
 
@@ -299,7 +299,7 @@ tag Task
 		elif data.done
 			"cyan3"
 		else
-			"blue3"
+			"blue4"
 	
 	def get_pink_bg
 		let active_task_duration = get_task_active_duration!
@@ -325,7 +325,7 @@ tag Task
 			@pointerup=handle_task_pointerup
 			autorender=1fps
 		>
-			css div bg:{bg} transition:background-color 600ms
+			css div bg:{bg} transition:background-color 300ms
 			css .middle px:7px py:2px w:100% d:flex fld:row jc:flex-start ai:center cursor:pointer
 			css .side d:flex fld:column jc:center ta:center bg:{get_side_bg!}
 			css .left rdl:{rd} min-width:50px
