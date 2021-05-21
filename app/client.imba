@@ -306,6 +306,11 @@ tag Task
 			"cyan3"
 		else
 			"blue3"
+	
+	def get_pink_bg
+		let active_task_duration = get_task_active_duration!
+		if data.duration > 0
+			p active_task_duration / data.duration
 
 	def get_task_active_duration
 		if start_time
@@ -316,35 +321,20 @@ tag Task
 	def render
 		let bg = get_middle_bg!
 		let { desc, time, duration, done, active_duration } = data
-		rd = 5px
-		<self[
-			d:flex h:70px flex:1 fld:row jc:space-between pb:10px
-		]
+		let rd = 5px
+		get_pink_bg!
+		<self[ d:flex h:70px flex:1 fld:row jc:space-between pb:10px ]
 			@pointerdown=handle_task_pointerdown
 			@pointercancel=handle_task_pointercancel
 			@pointerleave=handle_task_pointercancel
 			@pointerup=handle_task_pointerup
 			autorender=1fps
 		>
-			css div
-				bg:{bg}
-				transition:background-color 600ms
-			css .middle
-				px:7px py:2px w:100%
-				d:flex fld:row jc:flex-start ai:center
-				cursor:pointer user-select:none user-select:none
-			css .side
-				d:flex
-				fld:column
-				jc:center
-				ta:center
-				bg:{get_side_bg!}
-			css .left
-				rdl:{rd}
-				min-width:50px
-			css .right
-				rdr:{rd}
-				min-width:85px
+			css div bg:{bg} transition:background-color 600ms
+			css .middle px:7px py:2px w:100% d:flex fld:row jc:flex-start ai:center cursor:pointer
+			css .side d:flex fld:column jc:center ta:center bg:{get_side_bg!}
+			css .left rdl:{rd} min-width:50px
+			css .right rdr:{rd} min-width:85px
 			<div.side.left> time
 			<div.middle> desc
 			let active_task_duration = get_task_active_duration!
