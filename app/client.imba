@@ -240,6 +240,10 @@ tag Task
 	prop active = no
 	prop start_time
 
+	def clear_timeout
+		clearTimeout(timeout)
+		timeout = null
+
 	def deactivate_task
 		data.active_duration += new Date() - start_time
 		p data.active_duration
@@ -247,7 +251,7 @@ tag Task
 		start_time = null
 
 	def handle_long_press
-		p "long pressed"
+		clear_timeout!
 		if data.done
 			delete_task!
 			imba.commit!
@@ -266,20 +270,23 @@ tag Task
 	def handle_task_pointercancel
 		p "pointercancel"
 		animating = no
-		clearTimeout(timeout)
+		clear_timeout!
 	
 	def delete_task
 		state.tasks = state.tasks.filter(do |t| t.id != data.id)
 
-	def handle_task_click
-		p "click"
-		if data.done
-			data.done = no
-		elif active and start_time
-			deactivate_task!
-		elif !active and !start_time
-			start_time = new Date()
-			active = true
+	def handle_task_pointerup
+		p "pointerup"
+		if timeout
+			clear_timeout!
+			animating = no
+			if data.done
+				data.done = no
+			elif active and start_time
+				deactivate_task!
+			elif !active and !start_time
+				start_time = new Date()
+				active = true
 	
 	def get_middle_bg
 		if animating
@@ -318,8 +325,8 @@ tag Task
 		]
 			@pointerdown=handle_task_pointerdown
 			@pointercancel=handle_task_pointercancel
-			@pointerup=handle_task_pointercancel
-			@click=handle_task_click
+			@pointerleave=handle_task_pointercancel
+			@pointerup=handle_task_pointerup
 			autorender=1fps
 		>
 			css div
