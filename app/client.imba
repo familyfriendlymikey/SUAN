@@ -17,6 +17,7 @@ def getInitialState
 	state.viewing_complete = no
 	state.add_task_text = ""
 	state.view = "SCHEDULE"
+	state.top_button_timeout = null
 
 def loadState
 	if localStorage.hasOwnProperty(let state_key = get_state_key!)
@@ -200,8 +201,6 @@ tag Options
 
 tag Schedule
 
-	prop timeout
-
 	def view_options
 		state.view = "OPTIONS"
 
@@ -212,8 +211,8 @@ tag Schedule
 		parseInt(total/1000)
 
 	def clear_timeout
-		clearTimeout(timeout)
-		timeout = null
+		clearTimeout(state.top_button_timeout)
+		state.top_button_timeout = null
 
 	def handle_task_pointercancel
 		p "pointercancel"
@@ -225,7 +224,7 @@ tag Schedule
 
 	def handle_task_pointerdown
 		p "pointerdown"
-		timeout = setTimeout(handle_long_press.bind(self), 2000)
+		state.top_button_timeout = setTimeout(handle_long_press.bind(self), 2000)
 
 	def handle_long_press
 		clear_timeout!
@@ -239,21 +238,19 @@ tag Schedule
 			imba.commit!
 	
 	def get_bg
-		if timeout
+		if state.top_button_timeout
 			if state.cycle_start_time
-				"cyan2"
+				"blue4"
 			else
 				"cyan1"
-				# get_color_based_on_daytime!
 		else
 			if state.cycle_start_time
-				# get_color_based_on_daytime!
 				"cyan1"
 			else
-				"cyan2"
+				"blue4"
 
 	def get_color
-		if timeout
+		if state.top_button_timeout
 			if state.cycle_start_time
 				"black"
 			else
@@ -263,6 +260,18 @@ tag Schedule
 				"black"
 			else
 				"black"
+
+	def get_bottom_button_bg
+		if state.top_button_timeout
+			if state.cycle_start_time
+				"blue4"
+			else
+				"cyan1"
+		else
+			if state.cycle_start_time
+				"cyan1"
+			else
+				"blue4"
 
 	def render
 		let tasks = get_tasks_list!
@@ -304,8 +313,18 @@ tag Schedule
 						<Task data=item $key=item.id>
 			<div[w:100%]>
 				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
-				<div.bottom-button>
-					css div d:flex fl:1 fld:row jc:center ai:center h:100%
+				<div.bottom-button
+				[
+					bg:{get_bottom_button_bg!}
+					transition: background 2500ms
+				]>
+					css div
+						d:flex
+						fl:1
+						fld:row
+						jc:center
+						ai:center
+						h:100%
 					<div@click=view_options> <svg src='./assets/settings.svg'>
 					<div@click=state.viewing_complete=!state.viewing_complete>
 						if state.viewing_complete
