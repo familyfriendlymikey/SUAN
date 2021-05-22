@@ -304,7 +304,7 @@ tag Schedule
 				jc:flex-start
 				ai:center
 				w:100%
-				bg:{tasks.length == 0 ? "cyan2" : "none"}
+				bg:{tasks.length == 0 ? "blue3" : "none"}
 				overflow-y:scroll
 				transition:background-color 700ms
 			]>
@@ -312,7 +312,7 @@ tag Schedule
 					<div [w:100% box-sizing:border-box px:15px pt:15px]> for item in tasks
 						<Task data=item $key=item.id>
 			<div[w:100%]>
-				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
+				<div[bg:blue3 c:blue8 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
 				<div.bottom-button
 				[
 					bg:{get_bottom_button_bg!}
@@ -418,7 +418,7 @@ tag Task
 	
 	def get_middle_bg
 		if !state.cycle_start_time
-			"cyan2"
+			"blue4"
 		elif timeout
 			"cyan1"
 		elif data.done
@@ -431,7 +431,7 @@ tag Task
 
 	def get_side_bg
 		if !state.cycle_start_time
-			"cyan2"
+			"blue4"
 		elif timeout
 			"cyan1"
 		elif data.done
