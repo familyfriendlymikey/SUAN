@@ -238,24 +238,26 @@ tag Schedule
 	def get_bg
 		if timeout
 			if state.cycle_start_time
-				"gray7"
+				"cyan2"
 			else
-				get_color_based_on_daytime!
+				"cyan1"
+				# get_color_based_on_daytime!
 		else
 			if state.cycle_start_time
-				get_color_based_on_daytime!
+				# get_color_based_on_daytime!
+				"cyan1"
 			else
-				"gray7"
+				"cyan2"
 
 	def get_color
 		if timeout
 			if state.cycle_start_time
 				"black"
 			else
-				"white"
+				"black"
 		else
 			if state.cycle_start_time
-				"white"
+				"black"
 			else
 				"black"
 
@@ -394,7 +396,7 @@ tag Task
 	
 	def get_middle_bg
 		if !state.cycle_start_time
-			"gray4"
+			"cyan2"
 		elif timeout
 			"cyan1"
 		elif data.done
@@ -407,7 +409,7 @@ tag Task
 
 	def get_side_bg
 		if !state.cycle_start_time
-			"gray4"
+			"cyan2"
 		elif timeout
 			"cyan1"
 		elif data.done
