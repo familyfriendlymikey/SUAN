@@ -3,7 +3,7 @@ let o = "hello world"
 
 import { nanoid as generate_id } from 'nanoid'
 
-let api_version = "0.06"
+let api_version = "0.11"
 let state = {}
 
 getInitialState!
@@ -11,21 +11,23 @@ loadState!
 
 def getInitialState
 	state.tasks = []
+	state.past_tasks = []
+	state.cycle_start_time = null
 	state.adding = no
 	state.viewing_complete = no
 	state.add_task_text = ""
 	state.view = "SCHEDULE"
 
 def loadState
-	if localStorage.hasOwnProperty(let tasks_key = get_tasks_key!)
-		state.tasks = JSON.parse(localStorage[tasks_key])
+	if localStorage.hasOwnProperty(let state_key = get_state_key!)
+		state = JSON.parse(localStorage[state_key])
 
 def save_state
-	let tasks_key = get_tasks_key!
-	localStorage[tasks_key] = JSON.stringify state.tasks
+	let state_key = get_state_key!
+	localStorage[state_key] = JSON.stringify state
 
-def get_tasks_key
-	return "tasks_" + api_version
+def get_state_key
+	return "state_" + api_version
 
 def format_time_from_seconds s
 	if s / 3600 >= 1
@@ -63,6 +65,30 @@ def cmp_time item1, item2
 			return false
 		else
 			return false
+
+def best_fit x, a, b, c
+	(a * (x**2)) + (b * x) + c
+
+def red perc
+	parseInt(best_fit perc, -316, 92, 230)
+
+def green perc
+	parseInt(best_fit perc, -30, -178, 254)
+
+def blue perc
+	parseInt(best_fit perc, -270, 275, 147)
+
+def get_daytime_in_minutes
+	let now = Date().substr(16,5)
+	let hours = parseInt(now.substr(0,2)) - 6
+	let minutes = parseInt(now.substr(3))
+	(hours * 60) + minutes
+
+def get_color_based_on_daytime c=0
+	let minutes = get_daytime_in_minutes!
+	let max_minutes = 24 * 60
+	let perc = minutes/max_minutes
+	"rgb({red perc+c}, {green perc+c}, {blue perc+c})"
 
 def parse_task_text item
 	let words = item.trim().split(/\s/)
@@ -170,7 +196,9 @@ tag Options
 
 
 tag Schedule
-	
+
+	prop timeout
+
 	def view_options
 		state.view = "OPTIONS"
 
@@ -180,9 +208,81 @@ tag Schedule
 			total += item.active_duration
 		parseInt(total/1000)
 
+	def clear_timeout
+		clearTimeout(timeout)
+		timeout = null
+
+	def handle_task_pointercancel
+		p "pointercancel"
+		clear_timeout!
+	
+	def handle_task_pointerup
+		p "pointerup"
+		clear_timeout!
+
+	def handle_task_pointerdown
+		p "pointerdown"
+		timeout = setTimeout(handle_long_press.bind(self), 2000)
+
+	def handle_long_press
+		clear_timeout!
+		if state.cycle_start_time
+			state.past_tasks.push({cycle_start_time:state.cycle_start_time, cycle_end_time:Date.now!, tasks:state.tasks})
+			state.tasks = []
+			state.cycle_start_time = null
+			imba.commit!
+		else
+			state.cycle_start_time = Date.now!
+			imba.commit!
+	
+	def get_bg
+		if timeout
+			if state.cycle_start_time
+				"gray7"
+			else
+				get_color_based_on_daytime!
+		else
+			if state.cycle_start_time
+				get_color_based_on_daytime!
+			else
+				"gray7"
+
+	def get_color
+		if timeout
+			if state.cycle_start_time
+				"black"
+			else
+				"white"
+		else
+			if state.cycle_start_time
+				"white"
+			else
+				"black"
+
 	def render
 		let tasks = get_tasks_list!
 		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
+			<div
+				@pointerdown=handle_task_pointerdown
+				@pointercancel=handle_task_pointercancel
+				@pointerleave=handle_task_pointercancel
+				@pointerup=handle_task_pointerup
+				[
+					bg:{get_bg!}
+					c:{get_color!}
+					transition:background 2500ms, color 2500ms
+					w:100%
+					h:70px
+					d:flex
+					cursor:pointer
+					fld:row
+					jc:center
+					ai:center
+				]>
+					if state.cycle_start_time
+						<svg src='./assets/sun.svg'>
+					else
+						<svg src='./assets/moon.svg'>
 			<div[
 				fl:1
 				d:flex
@@ -195,7 +295,7 @@ tag Schedule
 				transition:background-color 700ms
 			]>
 				if tasks.length > 0
-					<div [w:100% box-sizing:border-box px:10px pt:10px]> for item in tasks
+					<div [w:100% box-sizing:border-box px:15px pt:15px]> for item in tasks
 						<Task data=item $key=item.id>
 			<div[w:100%]>
 				<div[bg:cyan2 c:blue5 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
@@ -271,7 +371,8 @@ tag Task
 
 	def handle_task_pointerdown
 		p "pointerdown"
-		timeout = setTimeout(handle_long_press.bind(self), 600)
+		if state.cycle_start_time
+			timeout = setTimeout(handle_long_press.bind(self), 600)
 
 	def handle_task_pointercancel
 		p "pointercancel"
@@ -292,7 +393,9 @@ tag Task
 				data.start_time = Date.now!
 	
 	def get_middle_bg
-		if timeout
+		if !state.cycle_start_time
+			"gray4"
+		elif timeout
 			"cyan1"
 		elif data.done
 			"cyan3"
@@ -303,7 +406,9 @@ tag Task
 				"blue2"
 
 	def get_side_bg
-		if timeout
+		if !state.cycle_start_time
+			"gray4"
+		elif timeout
 			"cyan1"
 		elif data.done
 			"cyan3"
