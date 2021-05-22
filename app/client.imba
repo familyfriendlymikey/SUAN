@@ -183,12 +183,15 @@ tag Options
 	def reset
 		getInitialState!
 
+	def update
+		state.view = "SCHEDULE"
+		window.location.reload(true)
+
 	def render
 		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
 			<div[d:flex fld:column jc:flex-start ai:center w:100% mt:20px]>
 				css div w:85% bg:blue2 d:flex fld:row jc:center ai:center p:20px mb:20px rd:20px c:blue5 fs:20px cursor:pointer
-				<div@click=reset> "RESET APP"
-				<div@click=window.location.reload(true)> "UPDATE"
+				<div@click=update> "UPDATE"
 			<div[w:100%]>
 				<div.bottom-button@click=state.view="SCHEDULE">
 					css div d:flex fl:1 fld:row jc:center ai:center h:100%
