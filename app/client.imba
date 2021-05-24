@@ -162,6 +162,7 @@ global css @root
 	-webkit-user-select:none
 	-moz-user-select:none
 	user-select:none
+	touch-action: manipulation
 
 global css body
 	m:0
