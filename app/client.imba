@@ -146,6 +146,16 @@ def parse_task_text item
 	
 	task
 
+let color = {}
+color.a = "purple2"
+color.b = "#EBF5EE"
+color.c = "purple1"
+color.d = "cyan2"
+color.e = "#542344"
+color.f = "moccasin"
+color.g = "green3"
+color.h = "blue5"
+
 global css @root
 	ff: 'Open Sans', sans-serif
 	-webkit-touch-callout:none
@@ -160,15 +170,12 @@ global css body
 	right:0
 	bottom:0
 	top:0
-	bg:blue1
 	d:flex
 	fld:column
 	jc:center
 	ai:center
 
 global css .bottom-button
-	bg:cyan1
-	c:blue5
 	h:100px b:0 l:0 r:0
 	w:100%
 	box-sizing:border-box
@@ -177,7 +184,6 @@ global css .bottom-button
 	pb:30px ta:center
 	px:10px
 	user-select:none
-
 
 tag Options
 
@@ -191,10 +197,10 @@ tag Options
 	def render
 		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
 			<div[d:flex fld:column jc:flex-start ai:center w:100% mt:20px]>
-				css div w:85% bg:blue2 d:flex fld:row jc:center ai:center p:20px mb:20px rd:20px c:blue5 fs:20px cursor:pointer
+				css div w:85% bg:{color.a} d:flex fld:row jc:center ai:center p:20px mb:20px rd:20px c:{color.d} fs:20px cursor:pointer
 				<div@click=update> "UPDATE"
 			<div[w:100%]>
-				<div.bottom-button@click=state.view="SCHEDULE">
+				<div.bottom-button[bg:{color.b}]@click=state.view="SCHEDULE">
 					css div d:flex fl:1 fld:row jc:center ai:center h:100%
 					<div@click=view_options> <svg src='./assets/home.svg'>
 
@@ -237,54 +243,49 @@ tag Schedule
 			state.cycle_start_time = Date.now!
 			imba.commit!
 	
-	def get_bg
+	def get_header_and_footer_bg
 		if state.top_button_timeout
 			if state.cycle_start_time
-				"blue4"
+				color.e
 			else
-				"cyan1"
+				color.b
 		else
 			if state.cycle_start_time
-				"cyan1"
+				color.b
 			else
-				"blue4"
+				color.e
 
-	def get_color
+	def get_header_and_footer_color
 		if state.top_button_timeout
 			if state.cycle_start_time
-				"black"
+				color.a
 			else
-				"black"
+				color.e
 		else
 			if state.cycle_start_time
-				"black"
+				color.e
 			else
-				"black"
-
-	def get_bottom_button_bg
-		if state.top_button_timeout
-			if state.cycle_start_time
-				"blue4"
-			else
-				"cyan1"
-		else
-			if state.cycle_start_time
-				"cyan1"
-			else
-				"blue4"
-
+				color.a
+	
 	def render
 		let tasks = get_tasks_list!
+		let schedule_bg
+		if tasks.length == 0 && state.cycle_start_time
+			schedule_bg = color.b
+		else
+			schedule_bg = "none"
+
 		<self[w:100% h:100% d:flex fld:column jc:space-between ai:center]>
-			<div
+			css .header_and_footer
+				bg:{get_header_and_footer_bg!}
+				c:{get_header_and_footer_color!}
+				transition:background 2500ms, color 250ms
+			<div.header_and_footer
 				@pointerdown=handle_task_pointerdown
 				@pointercancel=handle_task_pointercancel
 				@pointerleave=handle_task_pointercancel
 				@pointerup=handle_task_pointerup
 				[
-					bg:{get_bg!}
-					c:{get_color!}
-					transition:background 2500ms, color 2500ms
 					w:100%
 					h:70px
 					d:flex
@@ -304,7 +305,7 @@ tag Schedule
 				jc:flex-start
 				ai:center
 				w:100%
-				bg:{tasks.length == 0 ? "blue3" : "none"}
+				bg:{schedule_bg}
 				overflow-y:scroll
 				transition:background-color 700ms
 			]>
@@ -312,12 +313,8 @@ tag Schedule
 					<div [w:100% box-sizing:border-box px:15px pt:15px]> for item in tasks
 						<Task data=item $key=item.id>
 			<div[w:100%]>
-				<div[bg:blue3 c:blue8 d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
-				<div.bottom-button
-				[
-					bg:{get_bottom_button_bg!}
-					transition: background 2500ms
-				]>
+				<div.header_and_footer [d:flex fld:row jc:center w:100% h:30px ai:center]> format_time_from_seconds(get_total_active_time!)
+				<div.bottom-button.header_and_footer>
 					css div
 						d:flex
 						fl:1
@@ -418,28 +415,29 @@ tag Task
 	
 	def get_middle_bg
 		if !state.cycle_start_time
-			"blue4"
+			color.a
 		elif timeout
-			"cyan1"
+			color.b
 		elif data.done
-			"cyan3"
+			color.e
 		else
 			if data.start_time
-				"blue4"
+				color.a
 			else
-				"blue2"
+				color.c
 
 	def get_side_bg
 		if !state.cycle_start_time
-			"blue4"
+			color.a
 		elif timeout
-			"cyan1"
+			color.b
 		elif data.done
-			"cyan3"
+			color.e
 		else
-			"blue4"
+			color.a
 	
 	def get_pink_bg
+		return "pink3"
 		let active_task_duration = get_task_active_duration!
 		if data.duration > 0
 			p active_task_duration / data.duration
@@ -451,28 +449,32 @@ tag Task
 			return parseInt(data.active_duration/1000)
 
 	def render
-		let bg = get_middle_bg!
 		let { desc, time, duration, done, active_duration } = data
-		let rd = 5px
-		<self[ d:flex h:70px flex:1 fld:row jc:space-between mb:15px bxs:xs transform:{data.start_time ? "scaleX(0.95)" : "scale(1)"}]
+		<self[
+			overflow:hidden d:flex h:70px flex:1 fld:row rd:5px
+			jc:space-between mb:15px bxs:1px 1px 10px -5px black
+			c:{data.done ? color.a : color.e}
+			transform:{data.start_time ? "scaleX(0.95)" : "scale(1)"}
+			transition:transform 25ms
+		]
 			@pointerdown=handle_task_pointerdown
 			@pointercancel=handle_task_pointercancel
 			@pointerleave=handle_task_pointercancel
 			@pointerup=handle_task_pointerup
 			autorender=1fps
 		>
-			css div bg:{bg} transition:background-color 300ms
-			css .middle px:7px py:2px w:100% d:flex fld:row jc:flex-start ai:center cursor:pointer
+			css div transition:background-color 300ms
+			css .middle px:7px py:2px w:100% d:flex fld:row jc:flex-start ai:center cursor:pointer bg:{get_middle_bg!}
 			css .side d:flex fld:column jc:center ta:center bg:{get_side_bg!}
-			css .left rdl:{rd} min-width:50px
-			css .right rdr:{rd} min-width:85px
+			css .left min-width:50px
+			css .right min-width:85px
 			<div.side.left> time
 			<div.middle> desc
 			let active_task_duration = get_task_active_duration!
 			if duration && duration > active_task_duration
-				<div.side.right[bg:pink3]> "-" + format_time_from_seconds(duration - active_task_duration)
+				<div.side.right[bg:{get_pink_bg!}]> "-" + format_time_from_seconds(duration - active_task_duration)
 			elif duration
-				<div.side.right[bg:green3]> "+" + format_time_from_seconds(Math.abs(duration - active_task_duration))
+				<div.side.right[bg:{color.g}]> "+" + format_time_from_seconds(Math.abs(duration - active_task_duration))
 			else
 				<div.side.right> "+" + format_time_from_seconds(active_task_duration)
 
@@ -481,7 +483,7 @@ tag App
 
 	def render
 		save_state!
-		<self [d:flex fld:column h:100% max-width:500px w:100%]>
+		<self [d:flex fld:column h:100% max-width:500px w:100% bg:{color.e} ]>
 			if state.adding
 				<AddTaskPage>
 			else
