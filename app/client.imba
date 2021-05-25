@@ -221,15 +221,15 @@ tag Schedule
 		clearTimeout(state.top_button_timeout)
 		state.top_button_timeout = null
 
-	def handle_task_pointercancel
+	def handle_top_button_pointercancel
 		p "pointercancel"
 		clear_timeout!
 	
-	def handle_task_pointerup
+	def handle_top_button_pointerup
 		p "pointerup"
 		clear_timeout!
 
-	def handle_task_pointerdown
+	def handle_top_button_pointerdown
 		p "pointerdown"
 		state.top_button_timeout = setTimeout(handle_long_press.bind(self), 2000)
 
@@ -239,6 +239,7 @@ tag Schedule
 			state.past_tasks.push({cycle_start_time:state.cycle_start_time, cycle_end_time:Date.now!, tasks:state.tasks})
 			state.tasks = []
 			state.cycle_start_time = null
+			state.viewing_complete = no
 			imba.commit!
 		else
 			state.cycle_start_time = Date.now!
@@ -282,10 +283,10 @@ tag Schedule
 				c:{get_header_and_footer_color!}
 				transition:background 2500ms, color 250ms
 			<div.header_and_footer
-				@pointerdown=handle_task_pointerdown
-				@pointercancel=handle_task_pointercancel
-				@pointerleave=handle_task_pointercancel
-				@pointerup=handle_task_pointerup
+				@pointerdown=handle_top_button_pointerdown
+				@pointercancel=handle_top_button_pointercancel
+				@pointerleave=handle_top_button_pointercancel
+				@pointerup=handle_top_button_pointerup
 				[
 					w:100%
 					h:70px
@@ -324,11 +325,12 @@ tag Schedule
 						ai:center
 						h:100%
 					<div@click=view_options> <svg src='./assets/settings.svg'>
-					<div@click=state.viewing_complete=!state.viewing_complete>
-						if state.viewing_complete
-							<svg src='./assets/x.svg'>
-						else
-							<svg src='./assets/check.svg'>
+					if state.cycle_start_time
+						<div@click=state.viewing_complete=!state.viewing_complete>
+							if state.viewing_complete
+								<svg src='./assets/x.svg'>
+							else
+								<svg src='./assets/check.svg'>
 					<div@click=state.adding=!state.adding> <svg src='./assets/plus.svg'>
 
 
