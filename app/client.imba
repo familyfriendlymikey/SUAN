@@ -168,9 +168,9 @@ global css @root
 	-webkit-user-select:none
 	-moz-user-select:none
 	user-select:none
-	touch-action: manipulation
 
 global css body
+	touch-action: manipulation
 	m:0
 	pos:fixed
 	left:0
@@ -464,7 +464,6 @@ tag Task
 			return parseInt(data.active_duration/1000)
 
 	def render
-		let { desc, time, duration, done, active_duration } = data
 		<self[
 			overflow:hidden d:flex h:70px flex:1 fld:row rd:5px
 			jc:space-between mb:15px bxs:1px 1px 10px -5px black
@@ -483,13 +482,13 @@ tag Task
 			css .side d:flex fld:column jc:center ta:center bg:{get_side_bg!}
 			css .left min-width:50px
 			css .right min-width:85px
-			<div.side.left> time
-			<div.middle> desc
+			<div.side.left> data.time
+			<div.middle> data.desc
 			let active_task_duration = get_task_active_duration!
-			if duration && duration > active_task_duration
-				<div.side.right[bg:{get_pink_bg!}]> "-" + format_time_from_seconds(duration - active_task_duration)
-			elif duration
-				<div.side.right[bg:{color.g}]> "+" + format_time_from_seconds(Math.abs(duration - active_task_duration))
+			if data.duration && data.duration > active_task_duration
+				<div.side.right[bg:{get_pink_bg!}]> "-" + format_time_from_seconds(data.duration - active_task_duration)
+			elif data.duration
+				<div.side.right[bg:{color.g}]> "+" + format_time_from_seconds(Math.abs(data.duration - active_task_duration))
 			else
 				<div.side.right> "+" + format_time_from_seconds(active_task_duration)
 
