@@ -91,7 +91,7 @@ def get_color_based_on_daytime c=0
 	let perc = minutes/max_minutes
 	"rgb({red perc+c}, {green perc+c}, {blue perc+c})"
 
-def parse_task_text item
+def create_task_from_text item
 	let words = item.trim().split(/\s/)
 
 	const str_is_digit = do |s|
@@ -143,7 +143,9 @@ def parse_task_text item
 	else
 		task.time = "0:00"
 		task.desc = words.join(" ")
-	
+
+	task.id = generate_id!
+
 	task
 
 let color = {}
@@ -343,20 +345,13 @@ tag AddTaskPage
 				return
 		state.tasks.splice(state.tasks.length, 0, task_to_insert)
 
-	def tasks_are_same? task1, task2
-		for own key of task1
-			if task1[key] != task2[key]
-				return false
-		return true
-
 	def handle_add
-		if !state.add_task_text
+		const text_is_whitespace = do |t| /^\s*$/.test t
+		if text_is_whitespace state.add_task_text
 			state.adding = !state.adding
 			return
-		let task = parse_task_text state.add_task_text
-		if state.tasks.length < 1 || !tasks_are_same? task, state.tasks[0]
-			task.id = generate_id!
-			insert_task task
+		let task = create_task_from_text state.add_task_text
+		insert_task task
 		state.add_task_text = ""
 		state.adding = !state.adding
 	
