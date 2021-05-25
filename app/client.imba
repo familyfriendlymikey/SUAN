@@ -48,6 +48,10 @@ def get_tasks_list
 	else
 		get_incomplete_tasks!
 
+def deactivate_task task
+	task.active_duration += Date.now! - task.start_time
+	task.start_time = null
+
 def cmp_time item1, item2
 	let time1 = item1.time.split(":")
 	let time2 = item2.time.split(":")
@@ -234,14 +238,31 @@ tag Schedule
 	def handle_top_button_pointerdown
 		p "pointerdown"
 		state.top_button_timeout = setTimeout(handle_long_press.bind(self), 2000)
+	
+	def push_specific_tasks_to_past_list
+		let tasks_to_push = []
+		let tasks_to_keep = []
+		for task of state.tasks
+			if task.start_time
+				deactivate_task task
+			if task.done
+				tasks_to_push.push(task)
+			elif task.active_duration > 0
+				tasks_to_push.push(task)
+				task = JSON.parse(JSON.stringify(task))
+				task.active_duration = 0
+				tasks_to_keep.push(task)
+			else
+				tasks_to_keep.push(task)
+		state.past_tasks.push({cycle_start_time:state.cycle_start_time, cycle_end_time:Date.now!, tasks:tasks_to_push})
+		state.tasks = tasks_to_keep
+		state.cycle_start_time = null
+		state.viewing_complete = no
 
 	def handle_long_press
 		clear_timeout!
 		if state.cycle_start_time
-			state.past_tasks.push({cycle_start_time:state.cycle_start_time, cycle_end_time:Date.now!, tasks:state.tasks})
-			state.tasks = []
-			state.cycle_start_time = null
-			state.viewing_complete = no
+			push_specific_tasks_to_past_list!
 			imba.commit!
 		else
 			state.cycle_start_time = Date.now!
@@ -373,10 +394,6 @@ tag Task
 		clearTimeout(timeout)
 		timeout = null
 
-	def deactivate_task
-		data.active_duration += Date.now! - data.start_time
-		data.start_time = null
-
 	def handle_long_press
 		clear_timeout!
 		if data.done
@@ -386,7 +403,7 @@ tag Task
 			data.done = true
 			imba.commit!
 			if data.start_time
-				deactivate_task!
+				deactivate_task data
 
 	def handle_task_pointerdown
 		p "pointerdown"
@@ -407,7 +424,7 @@ tag Task
 			if data.done
 				data.done = no
 			elif data.start_time
-				deactivate_task!
+				deactivate_task data
 			else
 				data.start_time = Date.now!
 	
